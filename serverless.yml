@@ -1,0 +1,114 @@
+service: frontera-scheduling
+
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:AWS_REGION, 'us-east-1'}
+  timeout: 60
+  memorySize: 1024
+  httpApi:
+    payload: '2.0'
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: ${env:DATABASE_URL}
+    SUPABASE_URL: ${env:SUPABASE_URL, ''}
+    SUPABASE_JWT_SECRET: ${env:SUPABASE_JWT_SECRET, ''}
+    DOCUMENTS_BUCKET: ${self:custom.documentsBucketName}
+    EXPORTS_BUCKET: ${self:custom.exportsBucketName}
+    AWS_REGION: ${self:provider.region}
+    SES_FROM_EMAIL: ${self:custom.sesFromEmail}
+    SES_CONFIGURATION_SET: ${self:custom.sesConfigurationSetName, ''}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+          Resource:
+            - arn:aws:s3:::${self:custom.documentsBucketName}/*
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource:
+            - arn:aws:s3:::${self:custom.exportsBucketName}/*
+
+custom:
+  documentsBucketName: frontera-${sls:stage}-secure-documents
+  exportsBucketName: frontera-${sls:stage}-exports
+  sesFromEmail: ${env:SES_FROM_EMAIL, ''}
+  sesConfigurationSetName: frontera-${sls:stage}-scheduling
+
+package:
+  patterns:
+    - dist/**
+    - node_modules/**
+    - package.json
+    - '!src/**'
+    - '!test/**'
+    - '!.git/**'
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    timeout: 300
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+      - httpApi:
+          path: /
+          method: ANY
+
+resources:
+  Conditions:
+    CreateSesEmailIdentity:
+      Fn::Not:
+        - Fn::Equals:
+            - ${self:custom.sesFromEmail, ''}
+            - ''
+
+  Resources:
+    SecureDocumentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.documentsBucketName}
+
+    ExportsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.exportsBucketName}
+
+    SesConfigurationSet:
+      Type: AWS::SES::ConfigurationSet
+      Properties:
+        Name: ${self:custom.sesConfigurationSetName}
+
+    SesEmailIdentity:
+      Type: AWS::SES::EmailIdentity
+      Condition: CreateSesEmailIdentity
+      Properties:
+        EmailIdentity: ${self:custom.sesFromEmail}
+
+  Outputs:
+    DocumentsBucketName:
+      Value: ${self:custom.documentsBucketName}
+    ExportsBucketName:
+      Value: ${self:custom.exportsBucketName}
+    SesFromEmail:
+      Value: ${self:custom.sesFromEmail}
+    SesConfigurationSet:
+      Value: ${self:custom.sesConfigurationSetName}
+    SesEmailIdentityHint:
+      Condition: CreateSesEmailIdentity
+      Description: Verify this identity in SES console if deploy email did not auto-verify
+      Value: ${self:custom.sesFromEmail}
