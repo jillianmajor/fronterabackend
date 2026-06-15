@@ -1,0 +1,1829 @@
+[
+  {
+    "facilityName": "Allentown, PA",
+    "city": "Allentown",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Alpena, MI",
+    "city": "Alpena",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Altoona, PA",
+    "city": "Altoona",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Augusta, ME",
+    "city": "Augusta",
+    "state": "ME",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bangor, ME",
+    "city": "Bangor",
+    "state": "ME",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Braintree, MA",
+    "city": "Braintree",
+    "state": "MA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Carbondale, IL",
+    "city": "Carbondale",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "DuBois, PA",
+    "city": "DuBois",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Erie, PA",
+    "city": "Erie",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Flint, MI",
+    "city": "Flint",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fort Wayne, IN",
+    "city": "Fort Wayne",
+    "state": "IN",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Franconia, NH",
+    "city": "Franconia",
+    "state": "NH",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Grand Rapids, MI",
+    "city": "Grand Rapids",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hamilton, NJ",
+    "city": "Hamilton",
+    "state": "NJ",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Indianapolis, IN",
+    "city": "Indianapolis",
+    "state": "IN",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Jamestown, NY",
+    "city": "Jamestown",
+    "state": "NY",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Kalamazoo, MI",
+    "city": "Kalamazoo",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Kansas City, MO",
+    "city": "Kansas City",
+    "state": "MO",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lancaster, PA",
+    "city": "Lancaster",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Litchfield, IL",
+    "city": "Litchfield",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Marquette, MI",
+    "city": "Marquette",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Newberry, MI",
+    "city": "Newberry",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Norway, MI",
+    "city": "Norway",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Oakbrook Terrace, IL",
+    "city": "Oakbrook Terrace",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Orland Park, IL",
+    "city": "Orland Park",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Peoria, IL",
+    "city": "Peoria",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Petoskey, MI",
+    "city": "Petoskey",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Pittsburgh, PA",
+    "city": "Pittsburgh",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Plattsburgh, NY",
+    "city": "Plattsburgh",
+    "state": "NY",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Presque Isle, ME",
+    "city": "Presque Isle",
+    "state": "ME",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Providence, RI",
+    "city": "Providence",
+    "state": "RI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Rockford, IL",
+    "city": "Rockford",
+    "state": "IL",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Rose Valley, PA",
+    "city": "Rose Valley",
+    "state": "PA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Saint Louis, MO",
+    "city": "Saint Louis",
+    "state": "MO",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sault Sainte Marie, MI",
+    "city": "Sault Sainte Marie",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Southborough, MA",
+    "city": "Southborough",
+    "state": "MA",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Springfield, MO",
+    "city": "Springfield",
+    "state": "MO",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "St. Charles, MO",
+    "city": "St. Charles",
+    "state": "MO",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Traverse City, MI",
+    "city": "Traverse City",
+    "state": "MI",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Watertown, NY",
+    "city": "Watertown",
+    "state": "NY",
+    "region": "Region 1",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Alexandria, LA",
+    "city": "Alexandria",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Asheville, NC",
+    "city": "Asheville",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Atlanta 1, GA",
+    "city": "Atlanta 1",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Atlanta 2, GA",
+    "city": "Atlanta 2",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Augusta, GA",
+    "city": "Augusta",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Batesville, MS",
+    "city": "Batesville",
+    "state": "MS",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Beckley, WV",
+    "city": "Beckley",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bessemer, AL",
+    "city": "Bessemer",
+    "state": "AL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Biloxi, MS",
+    "city": "Biloxi",
+    "state": "MS",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bowie, MD",
+    "city": "Bowie",
+    "state": "MD",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Broussard, LA",
+    "city": "Broussard",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Carencro, LA",
+    "city": "Carencro",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Charleston, SC",
+    "city": "Charleston",
+    "state": "SC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Charleston, WV",
+    "city": "Charleston",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Charlotte, NC",
+    "city": "Charlotte",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Chattanooga, TN",
+    "city": "Chattanooga",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Clarksburg, WV",
+    "city": "Clarksburg",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Clarksville, TN",
+    "city": "Clarksville",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Columbia, SC",
+    "city": "Columbia",
+    "state": "SC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Columbus, GA",
+    "city": "Columbus",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Cookeville, TN",
+    "city": "Cookeville",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Cordova, TN",
+    "city": "Cordova",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Dothan, AL",
+    "city": "Dothan",
+    "state": "AL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Durham, NC",
+    "city": "Durham",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Elizabethtown, KY",
+    "city": "Elizabethtown",
+    "state": "KY",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fairfax, VA",
+    "city": "Fairfax",
+    "state": "VA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fayetteville, NC",
+    "city": "Fayetteville",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fort Smith, AR",
+    "city": "Fort Smith",
+    "state": "AR",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Frederick, MD",
+    "city": "Frederick",
+    "state": "MD",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fredericksburg, VA",
+    "city": "Fredericksburg",
+    "state": "VA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Goldsboro, NC",
+    "city": "Goldsboro",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Greenville, SC",
+    "city": "Greenville",
+    "state": "SC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hartford, CT",
+    "city": "Hartford",
+    "state": "CT",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Jackson, MS",
+    "city": "Jackson",
+    "state": "MS",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Jacksonville, FL",
+    "city": "Jacksonville",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Jacksonville, NC",
+    "city": "Jacksonville",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Johnson City, TN",
+    "city": "Johnson City",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Jonesboro, AR",
+    "city": "Jonesboro",
+    "state": "AR",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Knoxville, TN",
+    "city": "Knoxville",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lake Charles, LA",
+    "city": "Lake Charles",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Leesville, LA",
+    "city": "Leesville",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Little Rock, AR",
+    "city": "Little Rock",
+    "state": "AR",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Longs, SC",
+    "city": "Longs",
+    "state": "SC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Louisville, KY",
+    "city": "Louisville",
+    "state": "KY",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Macon, GA",
+    "city": "Macon",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Madison, AL",
+    "city": "Madison",
+    "state": "AL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Magnolia, AR",
+    "city": "Magnolia",
+    "state": "AR",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Mantachie, MS",
+    "city": "Mantachie",
+    "state": "MS",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Martinsburg, WV",
+    "city": "Martinsburg",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Melbourne, FL",
+    "city": "Melbourne",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Memphis, TN",
+    "city": "Memphis",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Mobile, AL",
+    "city": "Mobile",
+    "state": "AL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Monroe, LA",
+    "city": "Monroe",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Montgomery, AL",
+    "city": "Montgomery",
+    "state": "AL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Morgantown, WV",
+    "city": "Morgantown",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Nashville, TN",
+    "city": "Nashville",
+    "state": "TN",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "New Orleans, LA",
+    "city": "New Orleans",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Newland, NC",
+    "city": "Newland",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Norfolk 2, VA",
+    "city": "Norfolk 2",
+    "state": "VA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Norfolk, VA",
+    "city": "Norfolk",
+    "state": "VA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Ocala, FL",
+    "city": "Ocala",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Orange Park, FL",
+    "city": "Orange Park",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Orangeburg, SC",
+    "city": "Orangeburg",
+    "state": "SC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Orlando, FL",
+    "city": "Orlando",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Owensboro, KY",
+    "city": "Owensboro",
+    "state": "KY",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Paducah, KY",
+    "city": "Paducah",
+    "state": "KY",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Parkersburg, WV",
+    "city": "Parkersburg",
+    "state": "WV",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Pensacola, FL",
+    "city": "Pensacola",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Raleigh, NC",
+    "city": "Raleigh",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Richmond, VA",
+    "city": "Richmond",
+    "state": "VA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Ridgeland, MS",
+    "city": "Ridgeland",
+    "state": "MS",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Roanoke Rapids, NC",
+    "city": "Roanoke Rapids",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Salisbury, MD",
+    "city": "Salisbury",
+    "state": "MD",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Savannah, GA",
+    "city": "Savannah",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Shreveport, LA",
+    "city": "Shreveport",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tallahassee, FL",
+    "city": "Tallahassee",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tampa 1, FL",
+    "city": "Tampa 1",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tampa 2, FL",
+    "city": "Tampa 2",
+    "state": "FL",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tifton, GA",
+    "city": "Tifton",
+    "state": "GA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Vidalia, LA",
+    "city": "Vidalia",
+    "state": "LA",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Watertown, NY",
+    "city": "Watertown",
+    "state": "NY",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Williamsport, MD",
+    "city": "Williamsport",
+    "state": "MD",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Winston-Salem, NC",
+    "city": "Winston-Salem",
+    "state": "NC",
+    "region": "Region 2",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Aberdeen, SD",
+    "city": "Aberdeen",
+    "state": "SD",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Altus, OK",
+    "city": "Altus",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Amarillo 2, TX",
+    "city": "Amarillo 2",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Amarillo, TX",
+    "city": "Amarillo",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Ardmore, OK",
+    "city": "Ardmore",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bemidji, MN",
+    "city": "Bemidji",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bizmarck, ND",
+    "city": "Bizmarck",
+    "state": "ND",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Brainerd, MN",
+    "city": "Brainerd",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Brookings, SD",
+    "city": "Brookings",
+    "state": "SD",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bryan-College Station, TX",
+    "city": "Bryan-College Station",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Casper, WY",
+    "city": "Casper",
+    "state": "WY",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Cedar Rapids, IA",
+    "city": "Cedar Rapids",
+    "state": "IA",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Chamberlain, SD",
+    "city": "Chamberlain",
+    "state": "SD",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Cheyenne, WY",
+    "city": "Cheyenne",
+    "state": "WY",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Colorado Springs, CO",
+    "city": "Colorado Springs",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Corpus Christi, TX",
+    "city": "Corpus Christi",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Denton 1, TX",
+    "city": "Denton 1",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Denton 2, TX",
+    "city": "Denton 2",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Denver, CO",
+    "city": "Denver",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Dothan, AL",
+    "city": "Dothan",
+    "state": "AL",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Duluth, MN",
+    "city": "Duluth",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Durango, CO",
+    "city": "Durango",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Eagan, MN",
+    "city": "Eagan",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "El Paso 1, TX",
+    "city": "El Paso 1",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "El Paso 2, TX",
+    "city": "El Paso 2",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Elk City, OK",
+    "city": "Elk City",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Enid, OK",
+    "city": "Enid",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fargo, ND",
+    "city": "Fargo",
+    "state": "ND",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Franconia, NH",
+    "city": "Franconia",
+    "state": "NH",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Gillette, WY",
+    "city": "Gillette",
+    "state": "WY",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Grand Forks, ND",
+    "city": "Grand Forks",
+    "state": "ND",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Grand Junction, CO",
+    "city": "Grand Junction",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Grand Rapids, MN",
+    "city": "Grand Rapids",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Greenwood Village, CO",
+    "city": "Greenwood Village",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hartshorne, OK",
+    "city": "Hartshorne",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hays, KS",
+    "city": "Hays",
+    "state": "KS",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hugo, OK",
+    "city": "Hugo",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Katy, TX",
+    "city": "Katy",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Killeen, TX",
+    "city": "Killeen",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "La Crosse, WI",
+    "city": "La Crosse",
+    "state": "WI",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lancaster, TX",
+    "city": "Lancaster",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lawton, OK",
+    "city": "Lawton",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "League City, TX",
+    "city": "League City",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Liberal, KS",
+    "city": "Liberal",
+    "state": "KS",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lincoln, NE",
+    "city": "Lincoln",
+    "state": "NE",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lufkin, TX",
+    "city": "Lufkin",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Madison, AL",
+    "city": "Madison",
+    "state": "AL",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Mankato, MN",
+    "city": "Mankato",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "McAllen, TX",
+    "city": "McAllen",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Milwaukee, WI",
+    "city": "Milwaukee",
+    "state": "WI",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "North Platte, NE",
+    "city": "North Platte",
+    "state": "NE",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Oklahoma City, OK",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Omaha, NE",
+    "city": "Omaha",
+    "state": "NE",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Oshkosh, WI",
+    "city": "Oshkosh",
+    "state": "WI",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Ottumwa, IA",
+    "city": "Ottumwa",
+    "state": "IA",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Pueblo, CO",
+    "city": "Pueblo",
+    "state": "CO",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Rock Springs, WY",
+    "city": "Rock Springs",
+    "state": "WY",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Round Rock, TX",
+    "city": "Round Rock",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Salina, KS",
+    "city": "Salina",
+    "state": "KS",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "San Antonio 1, TX",
+    "city": "San Antonio 1",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "San Antonio 2, TX",
+    "city": "San Antonio 2",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Scottsbluff, NE",
+    "city": "Scottsbluff",
+    "state": "NE",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sheridan, WY",
+    "city": "Sheridan",
+    "state": "WY",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sioux City, IA",
+    "city": "Sioux City",
+    "state": "IA",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sioux Falls, SD",
+    "city": "Sioux Falls",
+    "state": "SD",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Stephenville, TX",
+    "city": "Stephenville",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Topeka, KS",
+    "city": "Topeka",
+    "state": "KS",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tulsa, OK",
+    "city": "Tulsa",
+    "state": "OK",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Waco, TX",
+    "city": "Waco",
+    "state": "TX",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Waite Park, MN",
+    "city": "Waite Park",
+    "state": "MN",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Wausau, WI",
+    "city": "Wausau",
+    "state": "WI",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "West Des Moines, IA",
+    "city": "West Des Moines",
+    "state": "IA",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "West Fargo, ND",
+    "city": "West Fargo",
+    "state": "ND",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Wichita, KS",
+    "city": "Wichita",
+    "state": "KS",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Williston, ND",
+    "city": "Williston",
+    "state": "ND",
+    "region": "Region 3",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Aiea, HI",
+    "city": "Aiea",
+    "state": "HI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Alamogordo, NM",
+    "city": "Alamogordo",
+    "state": "NM",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Albuquerque, NM",
+    "city": "Albuquerque",
+    "state": "NM",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Anchorage 2, AK",
+    "city": "Anchorage 2",
+    "state": "AK",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Anchorage, AK",
+    "city": "Anchorage",
+    "state": "AK",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bakersfield, CA",
+    "city": "Bakersfield",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bellevue, WA",
+    "city": "Bellevue",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bellingham 2, WA",
+    "city": "Bellingham 2",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bellingham, WA",
+    "city": "Bellingham",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bend, OR",
+    "city": "Bend",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Billings, MT",
+    "city": "Billings",
+    "state": "MT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Boise, ID",
+    "city": "Boise",
+    "state": "ID",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bremerton, WA",
+    "city": "Bremerton",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Bullhead City, AZ",
+    "city": "Bullhead City",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Campbell, CA",
+    "city": "Campbell",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Clackamas, OR",
+    "city": "Clackamas",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Crescent City, CA",
+    "city": "Crescent City",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fairbanks, AK",
+    "city": "Fairbanks",
+    "state": "AK",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Flagstaff, AZ",
+    "city": "Flagstaff",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Fresno, CA",
+    "city": "Fresno",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Great Falls, MT",
+    "city": "Great Falls",
+    "state": "MT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Green Bay, WI",
+    "city": "Green Bay",
+    "state": "WI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Helena, MT",
+    "city": "Helena",
+    "state": "MT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hillsboro, OR",
+    "city": "Hillsboro",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Hilo, HI",
+    "city": "Hilo",
+    "state": "HI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Honolulu 2, HI",
+    "city": "Honolulu 2",
+    "state": "HI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Honolulu, HI",
+    "city": "Honolulu",
+    "state": "HI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Idaho Falls, ID",
+    "city": "Idaho Falls",
+    "state": "ID",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Kalispell, MT",
+    "city": "Kalispell",
+    "state": "MT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Kingman, AZ",
+    "city": "Kingman",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Lakewood, WA",
+    "city": "Lakewood",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Long Beach, CA",
+    "city": "Long Beach",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Medford, OR",
+    "city": "Medford",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Millcreek, UT",
+    "city": "Millcreek",
+    "state": "UT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Missoula, MT",
+    "city": "Missoula",
+    "state": "MT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Oakland, CA",
+    "city": "Oakland",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Olympia, WA",
+    "city": "Olympia",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Palmdale, CA",
+    "city": "Palmdale",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Pearl City, HI",
+    "city": "Pearl City",
+    "state": "HI",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Phoenix, AZ",
+    "city": "Phoenix",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Poulsbo, WA",
+    "city": "Poulsbo",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Prescott Valley, AZ",
+    "city": "Prescott Valley",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Redding, CA",
+    "city": "Redding",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Roseburg, OR",
+    "city": "Roseburg",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Roswell, NM",
+    "city": "Roswell",
+    "state": "NM",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sacramento North, CA",
+    "city": "Sacramento North",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sacramento Response, CA",
+    "city": "Sacramento Response",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Sacramento, CA",
+    "city": "Sacramento",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "San Bernardino, CA",
+    "city": "San Bernardino",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "San Diego 1, CA",
+    "city": "San Diego 1",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "San Diego 2, CA",
+    "city": "San Diego 2",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Santa Ana, CA",
+    "city": "Santa Ana",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "South Ogden, UT",
+    "city": "South Ogden",
+    "state": "UT",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Spokane Valley, WA",
+    "city": "Spokane Valley",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Springfield, OR",
+    "city": "Springfield",
+    "state": "OR",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tacoma, WA",
+    "city": "Tacoma",
+    "state": "WA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Tempe, AZ",
+    "city": "Tempe",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Thousand Oaks, CA",
+    "city": "Thousand Oaks",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Twin Falls, ID",
+    "city": "Twin Falls",
+    "state": "ID",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Vacaville, CA",
+    "city": "Vacaville",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Vista, CA",
+    "city": "Vista",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Yucca Valley, CA",
+    "city": "Yucca Valley",
+    "state": "CA",
+    "region": "Region 4",
+    "clientName": "Optum"
+  },
+  {
+    "facilityName": "Yuma, AZ",
+    "city": "Yuma",
+    "state": "AZ",
+    "region": "Region 4",
+    "clientName": "Optum"
+  }
+]

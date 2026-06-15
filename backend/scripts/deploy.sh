@@ -8,6 +8,11 @@ if [[ -z "${SES_FROM_EMAIL:-}" ]]; then
   echo "  Set SES_FROM_EMAIL in .env (verified address) before sending mail."
 fi
 
+if [[ -z "${FRONTERA_API_PUBLIC_URL:-}" ]]; then
+  echo "Note: FRONTERA_API_PUBLIC_URL is unset in .env — Lambda will auto-set it from API Gateway on deploy."
+  echo "  For local invite emails, set FRONTERA_API_PUBLIC_URL to your API Gateway URL (see stack Output ApiUrl)."
+fi
+
 npm run build
 npx serverless deploy --stage "${SLS_STAGE:-dev}" "$@"
 

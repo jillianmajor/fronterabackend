@@ -8,6 +8,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Pool } from 'pg';
+import { getPgSslConfig } from '../src/config/database-connection';
 
 config();
 
@@ -17,11 +18,10 @@ async function main(): Promise<void> {
     throw new Error('DATABASE_URL is required');
   }
 
+  const ssl = getPgSslConfig(connectionString);
   const pool = new Pool({
     connectionString,
-    ssl: connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
-      ? undefined
-      : { rejectUnauthorized: false },
+    ...(ssl ? { ssl } : {}),
   });
 
   const db = drizzle(pool);
