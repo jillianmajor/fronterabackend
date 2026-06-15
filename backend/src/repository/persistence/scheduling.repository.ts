@@ -1,14 +1,35 @@
+/**
+ * scheduling persistence repository.
+ * Contracts: interface.ts
+ */
+
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq } from 'drizzle-orm';
 import { TOKENS } from '../../config/tokens';
-import type { IDbClient } from './db/interface';
+import type {
+  IDbClient,
+  ISchedulingRepository,
+  ProfileRow,
+  TimeOffRequestRow,
+  WorkSiteRow,
+} from './interface';
 import { profiles, timeOffRequests, workSites } from './db/schema';
-import type { ISchedulingRepository, ProfileRow, TimeOffRequestRow, WorkSiteRow } from './interface';
 
+// =============================================================================
+// Scheduling (Q1–Q4)
+// Used by: TOKENS.SchedulingRepository — future corporate review queue
+// =============================================================================
+
+/**
+ * SchedulingRepository — Drizzle implementation of persistence contracts.
+ */
 @Injectable()
 export class SchedulingRepository implements ISchedulingRepository {
   constructor(@Inject(TOKENS.DbClient) private readonly dbClient: IDbClient) {}
 
+  /**
+   * Loads a provider or staff profile by Supabase auth user id.
+   */
   async findProfileByUserId(userId: string): Promise<ProfileRow | null> {
     const rows = await this.dbClient.db
       .select()
@@ -18,6 +39,9 @@ export class SchedulingRepository implements ISchedulingRepository {
     return rows[0] ?? null;
   }
 
+  /**
+   * Loads a work site row by primary key (scheduling context).
+   */
   async findWorkSiteById(id: string): Promise<WorkSiteRow | null> {
     const rows = await this.dbClient.db
       .select()
@@ -27,6 +51,9 @@ export class SchedulingRepository implements ISchedulingRepository {
     return rows[0] ?? null;
   }
 
+  /**
+   * Lists time-off requests in `pending_review` for the corporate review queue.
+   */
   async listPendingTimeOffForReview(filters: {
     recruiterId?: string;
     workSiteId?: string;
@@ -50,3 +77,4 @@ export class SchedulingRepository implements ISchedulingRepository {
       .offset(filters.offset);
   }
 }
+

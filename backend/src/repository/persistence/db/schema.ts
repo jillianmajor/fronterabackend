@@ -1,6 +1,10 @@
 /**
- * Frontera Scheduling — public schema (aligned with Lovable / Frontera_Database_Schema.pdf).
- * RLS policies and SECURITY DEFINER functions live in Supabase SQL migrations (see drizzle/*.sql).
+ * =============================================================================
+ * Frontera Scheduling — Postgres schema (Drizzle)
+ * Aligned with Lovable / Frontera_Database_Schema.pdf.
+ * Migrations: drizzle/*.sql · Contracts: ../interface.ts
+ * RLS policies and SECURITY DEFINER functions: drizzle/0001_supabase_rls_functions.sql
+ * =============================================================================
  */
 import { sql } from 'drizzle-orm';
 import {
@@ -21,13 +25,23 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+// -----------------------------------------------------------------------------
+// Supabase Auth (read-only stub for FK references)
+// Used by: profiles.user_id, user_roles, documents, invites
+// Full auth.users rows are created by Supabase Auth or seed scripts
+// -----------------------------------------------------------------------------
+
 const auth = pgSchema('auth');
 export const authUsers = auth.table('users', {
   id: uuid('id').primaryKey(),
 });
 
-// --- Enums (Lovable / Supabase) ---
+// -----------------------------------------------------------------------------
+// PostgreSQL enums
+// Used by: table columns below; must match Supabase/Lovable enum definitions
+// -----------------------------------------------------------------------------
 
+// Portal role: admin, internal staff (recruiter/liaison), provider, client POC
 export const appRoleEnum = pgEnum('app_role', [
   'admin',
   'internal_staff',
@@ -35,6 +49,7 @@ export const appRoleEnum = pgEnum('app_role', [
   'client_user',
 ]);
 
+// Time-off review queue: remove day, add day, swap, modify shift
 export const timeOffChangeTypeEnum = pgEnum('time_off_change_type', [
   'remove_day',
   'add_day',
@@ -49,6 +64,7 @@ export const timeOffStatusEnum = pgEnum('time_off_status', [
   'cancelled',
 ]);
 
+// PRN monthly availability workflow
 export const monthlyAvailStatusEnum = pgEnum('monthly_avail_status', [
   'requested',
   'submitted',
@@ -63,6 +79,7 @@ export const ptoStatusEnum = pgEnum('pto_status', [
   'cancelled',
 ]);
 
+// Provider ↔ recruiter ↔ client org link (active = counts in Active Providers)
 export const assignmentStatusEnum = pgEnum('assignment_status', [
   'active',
   'inactive',
@@ -71,6 +88,7 @@ export const assignmentStatusEnum = pgEnum('assignment_status', [
 
 export const orgTypeEnum = pgEnum('org_type', ['client', 'vendor']);
 
+// Secure documents bucket categories (PACR, credentials, etc.)
 export const docCategoryEnum = pgEnum('doc_category', [
   'general',
   'pacr',
@@ -91,13 +109,17 @@ export const auditActionEnum = pgEnum('audit_action', [
   'login',
 ]);
 
+// Master calendar month lock per facility (Q4)
 export const scheduleFinalizationStatusEnum = pgEnum('schedule_finalization_status', [
   'draft',
   'finalized',
   'reopened',
 ]);
 
-// --- Tables ---
+// -----------------------------------------------------------------------------
+// Identity & roles
+// Used by: all portals; onboarding writes profiles + user_roles
+// -----------------------------------------------------------------------------
 
 export const profiles = pgTable(
   'profiles',
@@ -137,12 +159,12 @@ export const profiles = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    userIdUnique: uniqueIndex('profiles_user_id_key').on(table.userId),
-    recruiterIdx: index('profiles_recruiter_id_idx').on(table.recruiterId),
-    liaisonIdx: index('profiles_liaison_id_idx').on(table.liaisonId),
-    primaryFacilityIdx: index('profiles_primary_facility_id_idx').on(table.primaryFacilityId),
-  }),
+  (table) => [
+    uniqueIndex('profiles_user_id_key').on(table.userId),
+    index('profiles_recruiter_id_idx').on(table.recruiterId),
+    index('profiles_liaison_id_idx').on(table.liaisonId),
+    index('profiles_primary_facility_id_idx').on(table.primaryFacilityId),
+  ],
 );
 
 export const userRoles = pgTable(
@@ -155,26 +177,140 @@ export const userRoles = pgTable(
     role: appRoleEnum('role').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    userRoleUnique: uniqueIndex('user_roles_user_id_role_key').on(table.userId, table.role),
-  }),
+  (table) => [uniqueIndex('user_roles_user_id_role_key').on(table.userId, table.role)],
 );
 
-export const workSites = pgTable('work_sites', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  facilityName: text('facility_name').notNull(),
-  clientName: text('client_name').notNull().default('Optum'),
-  address: text('address'),
-  city: text('city'),
-  state: text('state'),
-  zip: text('zip'),
-  region: text('region'),
-  latitude: numeric('latitude'),
-  longitude: numeric('longitude'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+// -----------------------------------------------------------------------------
+// Facilities (approved work sites)
+// Used by: GET /admin/onboarding/work-sites, Active Providers filters, scheduling
+// Seed: scripts/seed/onboarding-work-sites.json (261 Optum sites)
+// -----------------------------------------------------------------------------
 
+export const workSites = pgTable(
+  'work_sites',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    facilityName: text('facility_name').notNull(),
+    clientName: text('client_name').notNull().default('Optum'),
+    address: text('address'),
+    city: text('city'),
+    state: text('state'),
+    zip: text('zip'),
+    region: text('region'),
+    latitude: numeric('latitude'),
+    longitude: numeric('longitude'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('work_sites_facility_name_region_key').on(table.facilityName, table.region),
+  ],
+);
+
+// -----------------------------------------------------------------------------
+// Onboarding reference catalog (admin-maintained dropdowns)
+// Used by: GET /admin/onboarding/form-options (read); seed: npm run db:seed:catalog
+// Seed: npm run db:seed:catalog
+// -----------------------------------------------------------------------------
+
+export const onboardingSpecialties = pgTable(
+  'onboarding_specialties',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_specialties_name_key').on(table.name)],
+);
+
+export const onboardingCompanies = pgTable(
+  'onboarding_companies',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_companies_name_key').on(table.name)],
+);
+
+export const onboardingRegions = pgTable(
+  'onboarding_regions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_regions_name_key').on(table.name)],
+);
+
+export const onboardingEmploymentTypes = pgTable(
+  'onboarding_employment_types',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    code: text('code').notNull(),
+    label: text('label').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_employment_types_code_key').on(table.code)],
+);
+
+export const onboardingScheduleTypes = pgTable(
+  'onboarding_schedule_types',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    code: text('code').notNull(),
+    label: text('label').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_schedule_types_code_key').on(table.code)],
+);
+
+export const onboardingClinicDays = pgTable(
+  'onboarding_clinic_days',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    name: text('name').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_clinic_days_name_key').on(table.name)],
+);
+
+export const onboardingWeeklySchedulePresets = pgTable(
+  'onboarding_weekly_schedule_presets',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    slug: text('slug').notNull(),
+    label: text('label').notNull(),
+    shifts: jsonb('shifts')
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    sortOrder: integer('sort_order').notNull().default(0),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('onboarding_weekly_schedule_presets_slug_key').on(table.slug)],
+);
+
+// Provider ↔ facility assignments with weekly_schedule JSON (hours at clinic)
 export const providerWorkSites = pgTable(
   'provider_work_sites',
   {
@@ -191,15 +327,21 @@ export const providerWorkSites = pgTable(
       .default(sql`'[]'::jsonb`),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    providerWorkSiteUnique: uniqueIndex('provider_work_sites_provider_work_site_key').on(
+  (table) => [
+    uniqueIndex('provider_work_sites_provider_work_site_key').on(
       table.providerId,
       table.workSiteId,
     ),
-    providerIdx: index('provider_work_sites_provider_id_idx').on(table.providerId),
-    workSiteIdx: index('provider_work_sites_work_site_id_idx').on(table.workSiteId),
-  }),
+    index('provider_work_sites_provider_id_idx').on(table.providerId),
+    index('provider_work_sites_work_site_id_idx').on(table.workSiteId),
+  ],
 );
+
+// -----------------------------------------------------------------------------
+// Documents (S3-backed secure uploads)
+// Used by: DocumentsModule, PACR attachments on time_off_requests
+// Env: DOCUMENTS_BUCKET
+// -----------------------------------------------------------------------------
 
 export const documents = pgTable('documents', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -223,6 +365,11 @@ export const documents = pgTable('documents', {
   createdBy: uuid('created_by'),
   updatedBy: uuid('updated_by'),
 });
+
+// -----------------------------------------------------------------------------
+// Scheduling — time off & availability
+// Used by: AdminSchedulingService, GET /admin/scheduling/review-queue
+// -----------------------------------------------------------------------------
 
 export const timeOffRequests = pgTable(
   'time_off_requests',
@@ -253,18 +400,15 @@ export const timeOffRequests = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    providerDateIdx: index('time_off_requests_provider_id_request_date_idx').on(
+  (table) => [
+    index('time_off_requests_provider_id_request_date_idx').on(
       table.providerId,
       table.requestDate,
     ),
-    statusDateIdx: index('time_off_requests_status_request_date_idx').on(
-      table.status,
-      table.requestDate,
-    ),
-    recruiterIdx: index('time_off_requests_recruiter_id_idx').on(table.recruiterId),
-    liaisonIdx: index('time_off_requests_liaison_id_idx').on(table.liaisonId),
-  }),
+    index('time_off_requests_status_request_date_idx').on(table.status, table.requestDate),
+    index('time_off_requests_recruiter_id_idx').on(table.recruiterId),
+    index('time_off_requests_liaison_id_idx').on(table.liaisonId),
+  ],
 );
 
 export const monthlyAvailabilityRequests = pgTable(
@@ -283,12 +427,12 @@ export const monthlyAvailabilityRequests = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    providerMonthUnique: uniqueIndex('monthly_availability_requests_provider_month_key').on(
+  (table) => [
+    uniqueIndex('monthly_availability_requests_provider_month_key').on(
       table.providerId,
       table.monthYear,
     ),
-  }),
+  ],
 );
 
 export const ptoRequests = pgTable('pto_requests', {
@@ -314,6 +458,11 @@ export const ptoRequests = pgTable('pto_requests', {
   updatedBy: uuid('updated_by'),
 });
 
+// -----------------------------------------------------------------------------
+// Organizations & staffing assignments
+// Used by: onboarding (Optum client org), Active Providers (active assignment)
+// -----------------------------------------------------------------------------
+
 export const organizations = pgTable('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
@@ -336,9 +485,7 @@ export const orgMemberships = pgTable(
       .references(() => organizations.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    userOrgUnique: uniqueIndex('org_memberships_user_id_org_id_key').on(table.userId, table.orgId),
-  }),
+  (table) => [uniqueIndex('org_memberships_user_id_org_id_key').on(table.userId, table.orgId)],
 );
 
 export const assignments = pgTable(
@@ -364,12 +511,16 @@ export const assignments = pgTable(
     createdBy: uuid('created_by'),
     updatedBy: uuid('updated_by'),
   },
-  (table) => ({
-    recruiterIdx: index('assignments_recruiter_id_idx').on(table.recruiterId),
-    providerIdx: index('assignments_provider_id_idx').on(table.providerId),
-    clientOrgIdx: index('assignments_client_org_id_idx').on(table.clientOrgId),
-  }),
+  (table) => [
+    index('assignments_recruiter_id_idx').on(table.recruiterId),
+    index('assignments_provider_id_idx').on(table.providerId),
+    index('assignments_client_org_id_idx').on(table.clientOrgId),
+  ],
 );
+
+// -----------------------------------------------------------------------------
+// Audit, notifications, email queue
+// -----------------------------------------------------------------------------
 
 export const auditLog = pgTable('audit_log', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -396,13 +547,13 @@ export const notifications = pgTable(
     read: boolean('read').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    userReadCreatedIdx: index('notifications_user_id_read_created_at_idx').on(
+  (table) => [
+    index('notifications_user_id_read_created_at_idx').on(
       table.userId,
       table.read,
       table.createdAt,
     ),
-  }),
+  ],
 );
 
 export const scheduledEmails = pgTable(
@@ -423,9 +574,7 @@ export const scheduledEmails = pgTable(
     cancelIfField: text('cancel_if_field'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    statusSendAtIdx: index('scheduled_emails_status_send_at_idx').on(table.status, table.sendAt),
-  }),
+  (table) => [index('scheduled_emails_status_send_at_idx').on(table.status, table.sendAt)],
 );
 
 export const announcements = pgTable('announcements', {
@@ -450,13 +599,19 @@ export const announcementRecipients = pgTable(
     readAt: timestamp('read_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    announcementUserUnique: uniqueIndex('announcement_recipients_announcement_user_key').on(
+  (table) => [
+    uniqueIndex('announcement_recipients_announcement_user_key').on(
       table.announcementId,
       table.userId,
     ),
-  }),
+  ],
 );
+
+// -----------------------------------------------------------------------------
+// Provider onboarding & invites
+// Used by: POST /admin/onboarding, accept-invite flow
+// Env: FRONTERA_APP_URL, SES_FROM_EMAIL
+// -----------------------------------------------------------------------------
 
 export const providerInvites = pgTable('provider_invites', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -483,6 +638,10 @@ export const providerInvites = pgTable('provider_invites', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// -----------------------------------------------------------------------------
+// Reference / lookup tables
+// -----------------------------------------------------------------------------
+
 export const holidays = pgTable(
   'holidays',
   {
@@ -492,9 +651,7 @@ export const holidays = pgTable(
     year: integer('year').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    holidayDateUnique: uniqueIndex('holidays_holiday_date_key').on(table.holidayDate),
-  }),
+  (table) => [uniqueIndex('holidays_holiday_date_key').on(table.holidayDate)],
 );
 
 export const hrContacts = pgTable('hr_contacts', {
@@ -506,6 +663,7 @@ export const hrContacts = pgTable('hr_contacts', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Site coordinator contacts per facility (Optum POC)
 export const optumPocs = pgTable('optum_pocs', {
   id: uuid('id').defaultRandom().primaryKey(),
   workSiteId: uuid('work_site_id').references(() => workSites.id, { onDelete: 'set null' }),
@@ -516,7 +674,11 @@ export const optumPocs = pgTable('optum_pocs', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Q4 deliverable: per-facility month finalization (Nest API — not in Lovable PDF table list). */
+// -----------------------------------------------------------------------------
+// Schedule finalization (Q4 — master calendar)
+// Used by: scheduling finalization APIs (per work_site + month)
+// -----------------------------------------------------------------------------
+
 export const scheduleFinalizations = pgTable(
   'schedule_finalizations',
   {
@@ -532,10 +694,10 @@ export const scheduleFinalizations = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => ({
-    siteMonthUnique: uniqueIndex('schedule_finalizations_work_site_month_key').on(
+  (table) => [
+    uniqueIndex('schedule_finalizations_work_site_month_key').on(
       table.workSiteId,
       table.monthYear,
     ),
-  }),
+  ],
 );

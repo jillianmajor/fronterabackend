@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { drizzle } from 'drizzle-orm/node-postgres';
 import type * as schema from './schema';
-import type { IDbClient } from './interface';
+import type { IDbClient } from '../interface';
 
 @Injectable()
 export class DbClient implements IDbClient {
