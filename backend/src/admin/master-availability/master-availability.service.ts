@@ -1,0 +1,257 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { AppErrors } from '../../common/errors/app-errors';
+import { Workbook } from 'exceljs';
+import { TOKENS } from '../../config/tokens';
+import type {
+  IMasterAvailabilityRepository,
+  MasterAvailabilityEntry,
+  MasterAvailabilityFilters,
+} from '../../repository/persistence/interface';
+import {
+  ALLOWED_MASTER_AVAILABILITY_COMPANIES,
+  buildCalendarWeeks,
+  defaultMonthYear,
+  mergeWithSetScheduleBaseline,
+  parseMonthYear,
+  sortAvailabilityEntries,
+} from '../../repository/persistence/utils/master-availability.util';
+import type {
+  MasterAvailabilityAceImoExportQueryDto,
+  MasterAvailabilityExportQueryDto,
+  MasterAvailabilityQueryDto,
+  MasterAvailabilityRegionExportQueryDto,
+} from './dto/master-availability-query.dto';
+import {
+  buildAceImoExportWorkbook,
+  buildRegionExportWorkbooks,
+} from '../../repository/persistence/utils/master-pto-export.util';
+
+const EXPORT_MAX_ROWS = 10_000;
+
+@Injectable()
+export class MasterAvailabilityService {
+  constructor(
+    @Inject(TOKENS.MasterAvailabilityRepository)
+    private readonly repository: IMasterAvailabilityRepository,
+  ) {}
+
+  getFilterOptions(company: string) {
+    this.assertCompany(company);
+    return this.repository.getFilterOptions(company);
+  }
+
+  getSubmissionProgress(company: string) {
+    this.assertCompany(company);
+    return this.repository.getSubmissionProgress(company);
+  }
+
+  async listTable(query: MasterAvailabilityQueryDto) {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const all = await this.loadEntries(filters, start, end);
+    const page = query.page ?? 1;
+    const pageSize = Math.min(query.pageSize ?? 25, 100);
+    const total = all.length;
+    const offset = (page - 1) * pageSize;
+    const items = all.slice(offset, offset + pageSize);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      monthYear: start,
+    };
+  }
+
+  async getCalendar(query: MasterAvailabilityQueryDto) {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const entries = await this.loadEntries(filters, start, end);
+    return buildCalendarWeeks(filters.monthYear, entries);
+  }
+
+  async exportExcel(query: MasterAvailabilityExportQueryDto): Promise<Buffer> {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const entries = (await this.loadEntries(filters, start, end)).slice(0, EXPORT_MAX_ROWS);
+
+    const workbook = new Workbook();
+
+    if (query.view === 'calendar') {
+      const sheet = workbook.addWorksheet('Master Availability Calendar');
+      sheet.columns = [
+        { header: 'Date', key: 'date', width: 12 },
+        { header: 'Weekday', key: 'weekday', width: 12 },
+        { header: 'Provider', key: 'providerName', width: 24 },
+        { header: 'Liaison', key: 'liaisonName', width: 20 },
+        { header: 'Time Available', key: 'timeAvailable', width: 22 },
+        { header: 'Status', key: 'status', width: 16 },
+        { header: 'Specialty', key: 'specialty', width: 18 },
+        { header: 'Region', key: 'region', width: 14 },
+        { header: 'Notes', key: 'notes', width: 28 },
+      ];
+      sheet.getRow(1).font = { bold: true };
+      const cal = buildCalendarWeeks(filters.monthYear, entries);
+      for (const week of cal.weeks) {
+        for (const day of week.days) {
+          if (!day.inMonth) continue;
+          for (const e of day.entries) {
+            sheet.addRow({
+              date: e.date,
+              weekday: day.weekday,
+              providerName: e.providerName,
+              liaisonName: e.liaisonName ?? '',
+              timeAvailable: e.timeAvailable ?? '',
+              status: e.status,
+              specialty: e.specialty ?? '',
+              region: e.region ?? '',
+              notes: e.notes ?? '',
+            });
+          }
+        }
+      }
+    } else {
+      const sheet = workbook.addWorksheet('Master Availability');
+      sheet.columns = [
+        { header: 'Provider', key: 'providerName', width: 24 },
+        { header: 'Liaison', key: 'liaisonName', width: 20 },
+        { header: 'Date', key: 'date', width: 12 },
+        { header: 'Time Available', key: 'timeAvailable', width: 22 },
+        { header: 'Status', key: 'status', width: 16 },
+        { header: 'Specialty', key: 'specialty', width: 18 },
+        { header: 'Region', key: 'region', width: 14 },
+        { header: 'Notes', key: 'notes', width: 28 },
+      ];
+      sheet.getRow(1).font = { bold: true };
+      for (const e of entries) {
+        sheet.addRow({
+          providerName: e.providerName,
+          liaisonName: e.liaisonName ?? '',
+          date: e.date,
+          timeAvailable: e.timeAvailable ?? '',
+          status: e.status,
+          specialty: e.specialty ?? '',
+          region: e.region ?? '',
+          notes: e.notes ?? '',
+        });
+      }
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportRegionExcel(
+    query: MasterAvailabilityRegionExportQueryDto,
+  ): Promise<{ filename: string; buffer: Buffer }[]> {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const [entries, providers] = await Promise.all([
+      this.loadEntries(filters, start, end),
+      this.repository.listProvidersForClientExport(filters, start, end),
+    ]);
+    const regions = filters.regions ?? [];
+    return buildRegionExportWorkbooks({
+      company: filters.company,
+      monthYear: filters.monthYear,
+      providers,
+      entries,
+      regions,
+    });
+  }
+
+  async exportAceImoExcel(query: MasterAvailabilityAceImoExportQueryDto): Promise<Buffer> {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const [entries, providers] = await Promise.all([
+      this.loadEntries(filters, start, end),
+      this.repository.listProvidersForClientExport(filters, start, end),
+    ]);
+    const recruiterNames = query.recruiterIds?.length
+      ? (
+          await this.repository.getFilterOptions(filters.company)
+        ).recruiters
+          .filter((r) => query.recruiterIds!.includes(r.id))
+          .map((r) => r.name)
+      : undefined;
+
+    return buildAceImoExportWorkbook({
+      company: filters.company,
+      monthYear: filters.monthYear,
+      providers,
+      entries,
+      recruiterNames,
+    });
+  }
+
+  private async loadEntries(
+    filters: MasterAvailabilityFilters,
+    start: string,
+    end: string,
+  ): Promise<MasterAvailabilityEntry[]> {
+    const timeOffRows = await this.repository.listTimeOffEntries(filters, start, end);
+
+    const displayStatuses = filters.displayStatuses ?? [];
+    const includeBaseline =
+      displayStatuses.length === 0 ||
+      displayStatuses.includes('approved') ||
+      (!filters.statuses?.length && !filters.status);
+
+    let merged = timeOffRows;
+    if (includeBaseline) {
+      const setProviders = await this.repository.listSetProvidersForBaseline(filters);
+      merged = mergeWithSetScheduleBaseline(timeOffRows, setProviders, start, end);
+    }
+
+    if (displayStatuses.length > 0) {
+      merged = merged.filter((e) => displayStatuses.includes(e.displayStatus));
+    }
+
+    return merged.sort(sortAvailabilityEntries);
+  }
+
+  private toFilters(query: MasterAvailabilityQueryDto): MasterAvailabilityFilters {
+    this.assertCompany(query.company);
+    const displayStatuses = queryDisplayStatuses(query);
+    const statusesFromDisplay = mapDisplayStatusesToDb(displayStatuses);
+
+    return {
+      company: query.company,
+      monthYear: query.monthYear ?? defaultMonthYear(),
+      liaisonId: query.liaisonId,
+      liaisonIds: query.liaisonIds,
+      recruiterIds: query.recruiterIds,
+      status: query.status,
+      statuses: query.statuses?.length ? query.statuses : statusesFromDisplay,
+      region: query.region,
+      regions: query.regions,
+      displayStatuses: query.displayStatuses,
+      q: query.q,
+    };
+  }
+
+  private assertCompany(company: string): void {
+    if (!ALLOWED_MASTER_AVAILABILITY_COMPANIES.includes(company as never)) {
+      throw AppErrors.invalidCompany(ALLOWED_MASTER_AVAILABILITY_COMPANIES);
+    }
+  }
+}
+
+function queryDisplayStatuses(query: MasterAvailabilityQueryDto): string[] {
+  return query.displayStatuses ?? [];
+}
+
+function mapDisplayStatusesToDb(displayStatuses: string[]): string[] | undefined {
+  if (displayStatuses.length === 0) return undefined;
+  const mapped = new Set<string>();
+  for (const s of displayStatuses) {
+    if (s === 'pending_approval') mapped.add('pending_review');
+    if (s === 'approved') mapped.add('approved');
+    if (s === 'denied') {
+      mapped.add('denied');
+      mapped.add('cancelled');
+    }
+  }
+  return mapped.size > 0 ? [...mapped] : undefined;
+}
