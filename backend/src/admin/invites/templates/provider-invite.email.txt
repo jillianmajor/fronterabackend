@@ -1,0 +1,10 @@
+Hi {{firstName}},
+
+You have been invited to the Frontera provider scheduling portal.
+
+Set up your account (link expires in 7 days):
+{{acceptUrl}}
+
+If you did not expect this email, you can ignore it.
+
+— Frontera Scheduling
