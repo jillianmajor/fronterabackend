@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AppErrors } from '../../common/errors/app-errors';
-import { ConfigService } from '@nestjs/config';
 import { DocumentDownloadService } from '../../documents/document-download.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { TOKENS } from '../../config/tokens';
-import type { IAwsSesGateway } from '../../repository/aws/ses.interface';
 import type {
   IScheduleChangeApprovalsRepository,
   ScheduleChangeApprovalsFilters,
@@ -35,14 +34,10 @@ import type {
 
 @Injectable()
 export class ScheduleChangeApprovalsService {
-  private readonly logger = new Logger(ScheduleChangeApprovalsService.name);
-
   constructor(
     @Inject(TOKENS.ScheduleChangeApprovalsRepository)
     private readonly repository: IScheduleChangeApprovalsRepository,
-    @Inject(TOKENS.SesGateway)
-    private readonly sesGateway: IAwsSesGateway,
-    private readonly config: ConfigService,
+    private readonly notifications: NotificationsService,
     private readonly documentDownload: DocumentDownloadService,
   ) {}
 
@@ -157,10 +152,14 @@ export class ScheduleChangeApprovalsService {
       throw AppErrors.pendingScheduleChangeNotFound();
     }
 
-    const notification = await this.notifyProvider(updated, 'approved', body.reviewNotes);
+    const notification = await this.notifications.notifyScheduleChangeDecision(
+      updated,
+      'approved',
+      { reviewedBy: body.reviewedBy, reviewNotes: body.reviewNotes },
+    );
     return {
       request: this.toPublicDay(updated),
-      notification,
+      notification: this.toApiNotification(notification),
     };
   }
 
@@ -173,10 +172,14 @@ export class ScheduleChangeApprovalsService {
       throw AppErrors.pendingScheduleChangeNotFound();
     }
 
-    const notification = await this.notifyProvider(updated, 'denied', body.reviewNotes);
+    const notification = await this.notifications.notifyScheduleChangeDecision(
+      updated,
+      'denied',
+      { reviewedBy: body.reviewedBy, reviewNotes: body.reviewNotes },
+    );
     return {
       request: this.toPublicDay(updated),
-      notification,
+      notification: this.toApiNotification(notification),
     };
   }
 
@@ -192,18 +195,21 @@ export class ScheduleChangeApprovalsService {
 
     const notificationErrors: string[] = [];
     let notificationsSent = 0;
+    let inAppNotificationsCreated = 0;
 
     for (const requestId of result.updatedIds) {
       const row = await this.repository.findRequestById(requestId);
-      if (!row?.providerEmail) continue;
+      if (!row) continue;
       try {
-        const sent = await this.notifyProvider(
+        const outcome = await this.notifications.notifyScheduleChangeDecision(
           row,
           body.decision === 'approved' ? 'approved' : 'denied',
-          body.reviewNotes,
+          { reviewedBy: body.reviewedBy, reviewNotes: body.reviewNotes },
         );
-        if (sent.sent) notificationsSent++;
-        if (sent.error) notificationErrors.push(`${requestId}: ${sent.error}`);
+        if (outcome.emailSent) notificationsSent++;
+        if (outcome.inAppCreated || outcome.reviewerInAppCreated) inAppNotificationsCreated++;
+        const errors = [outcome.emailError, outcome.inAppError].filter(Boolean);
+        if (errors.length) notificationErrors.push(`${requestId}: ${errors.join('; ')}`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Notification failed';
         notificationErrors.push(`${requestId}: ${msg}`);
@@ -213,7 +219,26 @@ export class ScheduleChangeApprovalsService {
     return {
       ...result,
       notificationsSent,
+      inAppNotificationsCreated,
       notificationErrors,
+    };
+  }
+
+  private toApiNotification(result: {
+    inAppCreated: boolean;
+    inAppId?: string;
+    inAppError?: string;
+    emailSent: boolean;
+    messageId?: string;
+    emailError?: string;
+  }) {
+    return {
+      sent: result.emailSent,
+      messageId: result.messageId,
+      error: result.emailError,
+      inAppCreated: result.inAppCreated,
+      inAppId: result.inAppId,
+      inAppError: result.inAppError,
     };
   }
 
@@ -261,51 +286,5 @@ export class ScheduleChangeApprovalsService {
       ...rest,
       submittedAt: createdAt.toISOString(),
     };
-  }
-
-  private async notifyProvider(
-    row: ScheduleChangeRequestRow,
-    decision: 'approved' | 'denied',
-    reviewNotes?: string,
-  ): Promise<{ sent: boolean; messageId?: string; error?: string }> {
-    const email = row.providerEmail?.trim();
-    if (!email) {
-      return { sent: false, error: 'Provider has no email on file' };
-    }
-
-    try {
-      const appUrl = this.config.get<string>('FRONTERA_APP_URL')?.replace(/\/$/, '');
-      const availabilityUrl = appUrl ? `${appUrl}/availability` : undefined;
-      const verb = decision === 'approved' ? 'approved' : 'denied';
-      const dateLabel = row.requestDate;
-      const timePart = row.timeLabel ? ` (${row.timeLabel})` : '';
-      const notesPart = reviewNotes?.trim() ? `\n\nReviewer note: ${reviewNotes.trim()}` : '';
-      const linkPart = availabilityUrl
-        ? `\n\nView your availability: ${availabilityUrl}`
-        : '';
-
-      const subject = `Schedule change ${verb} — ${dateLabel}`;
-      const textBody =
-        `Your schedule change request for ${dateLabel}${timePart} was ${verb}.` +
-        notesPart +
-        linkPart;
-      const htmlBody = `<p>Your schedule change request for <strong>${dateLabel}</strong>${timePart} was <strong>${verb}</strong>.</p>` +
-        (reviewNotes?.trim() ? `<p>Reviewer note: ${reviewNotes.trim()}</p>` : '') +
-        (availabilityUrl
-          ? `<p><a href="${availabilityUrl}">View your availability</a></p>`
-          : '');
-
-      const result = await this.sesGateway.sendEmail({
-        to: [email],
-        subject,
-        textBody,
-        htmlBody,
-      });
-      return { sent: true, messageId: result.messageId };
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to send email';
-      this.logger.warn(`Provider notification failed for ${row.requestId}: ${error}`);
-      return { sent: false, error };
-    }
   }
 }

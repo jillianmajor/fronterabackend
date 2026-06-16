@@ -146,6 +146,22 @@ export async function buildRegionExportWorkbooks(params: {
   return outputs;
 }
 
+export async function buildEmptyRegionExportWorkbook(params: {
+  company: string;
+  monthYear: string;
+  region: string;
+}): Promise<{ filename: string; buffer: Buffer }> {
+  const { label } = parseMonthYear(params.monthYear);
+  const workbook = new Workbook();
+  workbook.addWorksheet('No providers');
+  const filename =
+    params.region === 'Chaperone'
+      ? `Chaperone - Frontera - ${label}.xlsx`
+      : `Region ${params.region} - ${params.company} - ${label}.xlsx`;
+  const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+  return { filename, buffer };
+}
+
 const CANONICAL_RECRUITERS = [
   'Amy Guy',
   'Audrey Williams',

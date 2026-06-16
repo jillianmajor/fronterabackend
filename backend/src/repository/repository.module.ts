@@ -12,6 +12,7 @@ import {
   OnboardingRepository,
   ClientSchedulesRepository,
   HolidaysRepository,
+  NotificationsRepository,
   ProviderSchedulingRepository,
   ProvidersRepository,
   PrnAvailabilityRepository,
@@ -109,6 +110,14 @@ import * as schema from './persistence/db/schema';
       useFactory: () => new Logger(ClientSchedulesRepository.name),
     },
     {
+      provide: TOKENS.NotificationsRepository,
+      useClass: NotificationsRepository,
+    },
+    {
+      provide: TOKENS.NotificationsRepositoryLogger,
+      useFactory: () => new Logger(NotificationsRepository.name),
+    },
+    {
       provide: 'PG_POOL',
       useFactory: (config: ConfigService) => {
         const connectionString = config.get<string>('DATABASE_URL');
@@ -141,6 +150,7 @@ import * as schema from './persistence/db/schema';
     TOKENS.ProviderSchedulingRepository,
     TOKENS.HolidaysRepository,
     TOKENS.ClientSchedulesRepository,
+    TOKENS.NotificationsRepository,
   ],
 })
 export class RepositoryModule {}

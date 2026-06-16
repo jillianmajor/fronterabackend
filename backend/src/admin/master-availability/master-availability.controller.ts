@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, StreamableFile } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query, Res, StreamableFile } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiProduces, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import {
@@ -82,14 +82,7 @@ export class MasterAvailabilityController {
     const files = await this.masterAvailabilityService.exportRegionExcel(query);
     const file = files[0];
     if (!file) {
-      const empty = await this.masterAvailabilityService.exportAceImoExcel(query);
-      res.set({
-        'Content-Type':
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="region-export-empty.xlsx"`,
-        'Content-Length': String(empty.length),
-      });
-      return new StreamableFile(empty);
+      throw new NotFoundException('No region export data for the selected filters.');
     }
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

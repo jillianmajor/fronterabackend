@@ -16,6 +16,7 @@ import { loadDotEnv } from './seed/load-dotenv';
 import { seedExtraActiveProvidersData } from './seed/extra-active-providers';
 import { seedProviderPrnAvailabilityData } from './seed/provider-prn-availability';
 import { seedProviderSetTimeOffData } from './seed/provider-set-time-off';
+import { seedHolidays } from './seed/seed-holidays';
 import { SEED, SEED_EMAIL, SEED_WEEKLY_SCHEDULE } from './seed/ids';
 
 async function ensureAuthUser(
@@ -63,6 +64,8 @@ async function main(): Promise<void> {
 
   try {
     await client.query('BEGIN');
+
+    await seedHolidays(client);
 
     const inst = await client.query<{ id: string }>('SELECT id FROM auth.instances LIMIT 1');
     const instanceId = inst.rows[0]?.id ?? '00000000-0000-0000-0000-000000000000';

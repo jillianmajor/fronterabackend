@@ -26,6 +26,8 @@ export const TOKENS = {
   HolidaysRepositoryLogger: 'HolidaysRepositoryLogger',
   ClientSchedulesRepository: 'ClientSchedulesRepository',
   ClientSchedulesRepositoryLogger: 'ClientSchedulesRepositoryLogger',
+  NotificationsRepository: 'NotificationsRepository',
+  NotificationsRepositoryLogger: 'NotificationsRepositoryLogger',
   S3Gateway: 'S3Gateway',
   SesGateway: 'SesGateway',
   SesGatewayLogger: 'SesGatewayLogger',

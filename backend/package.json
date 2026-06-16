@@ -16,6 +16,7 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "ts-node scripts/seed-test-data.ts",
     "db:seed:catalog": "ts-node scripts/seed-onboarding-catalog.ts",
+    "db:seed:holidays": "ts-node scripts/seed-holidays.ts",
     "db:seed:all": "npm run db:seed:catalog && npm run db:seed",
     "db:seed:dev-logins": "ts-node scripts/seed-dev-logins.ts",
     "db:grants": "ts-node scripts/run-authenticated-grants.ts",

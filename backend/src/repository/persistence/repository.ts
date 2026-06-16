@@ -12,4 +12,5 @@ export { ScheduleChangeApprovalsRepository } from './schedule-change-approvals.r
 export { PrnAvailabilityRepository } from './prn-availability.repository';
 export { ProviderSchedulingRepository } from './provider-scheduling.repository';
 export { HolidaysRepository } from './holidays.repository';
+export { NotificationsRepository } from './notifications.repository';
 export { ClientSchedulesRepository } from './client-schedules.repository';

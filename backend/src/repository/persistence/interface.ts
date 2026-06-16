@@ -631,6 +631,7 @@ export interface ProviderSchedulingContext {
   email: string | null;
   scheduleType: string;
   recruiterName: string | null;
+  liaisonId: string | null;
   liaisonName: string | null;
   clientName: string | null;
   workSites: {
@@ -787,6 +788,33 @@ export interface HolidayRow {
 
 export interface IHolidaysRepository {
   list(from?: string, to?: string): Promise<HolidayRow[]>;
+}
+
+// -----------------------------------------------------------------------------
+// In-app notifications (Supabase `notifications` — Nest writes, FE reads via RLS)
+// -----------------------------------------------------------------------------
+
+export interface NotificationInsertInput {
+  userId: string;
+  type: string;
+  title: string;
+  message?: string;
+  link?: string;
+}
+
+export interface NotificationRow {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string | null;
+  link: string | null;
+  read: boolean;
+  createdAt: Date;
+}
+
+export interface INotificationsRepository {
+  insert(input: NotificationInsertInput): Promise<NotificationRow>;
 }
 
 // -----------------------------------------------------------------------------

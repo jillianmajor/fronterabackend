@@ -64,6 +64,7 @@ export class ProviderSchedulingRepository implements IProviderSchedulingReposito
         email: profiles.email,
         scheduleType: profiles.scheduleType,
         recruiterName: profiles.recruiterName,
+        liaisonId: profiles.liaisonId,
         liaisonName: profiles.liaisonName,
       })
       .from(profiles)
@@ -108,6 +109,7 @@ export class ProviderSchedulingRepository implements IProviderSchedulingReposito
       email: profile.email,
       scheduleType: profile.scheduleType,
       recruiterName: profile.recruiterName,
+      liaisonId: profile.liaisonId,
       liaisonName: profile.liaisonName,
       clientName: primary?.clientName ?? 'Optum',
       workSites: sites.map((s) => ({

@@ -23,6 +23,7 @@ import type {
 } from './dto/master-availability-query.dto';
 import {
   buildAceImoExportWorkbook,
+  buildEmptyRegionExportWorkbook,
   buildRegionExportWorkbooks,
 } from '../../repository/persistence/utils/master-pto-export.util';
 
@@ -152,13 +153,23 @@ export class MasterAvailabilityService {
       this.repository.listProvidersForClientExport(filters, start, end),
     ]);
     const regions = filters.regions ?? [];
-    return buildRegionExportWorkbooks({
+    const results = await buildRegionExportWorkbooks({
       company: filters.company,
       monthYear: filters.monthYear,
       providers,
       entries,
       regions,
     });
+    if (results.length === 0 && regions.length === 1) {
+      return [
+        await buildEmptyRegionExportWorkbook({
+          company: filters.company,
+          monthYear: filters.monthYear,
+          region: regions[0]!,
+        }),
+      ];
+    }
+    return results;
   }
 
   async exportAceImoExcel(query: MasterAvailabilityAceImoExportQueryDto): Promise<Buffer> {

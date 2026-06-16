@@ -9,7 +9,9 @@ NestJS (TypeScript) backend for **Frontera provider scheduling**.
 
 ## Local development
 
-### Docker
+**New developer?** Step-by-step guide: [docs/local-dev-setup.md](./docs/local-dev-setup.md)
+
+### Docker (recommended)
 
 ```bash
 npm run docker:up

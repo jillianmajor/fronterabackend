@@ -7,6 +7,8 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import type { AuthenticatedUser } from '../../auth/auth.types';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import {
   ApproveScheduleChangeDto,
   BulkScheduleChangeDecisionDto,
@@ -82,21 +84,38 @@ export class ScheduleChangeApprovalsController {
   @Post('requests/:id/approve')
   @ApiOperation({ summary: 'Approve one pending request (optional hour adjustment)' })
   @ApiParam({ name: 'id', format: 'uuid' })
-  approve(@Param('id') id: string, @Body() body: ApproveScheduleChangeDto) {
-    return this.service.approve(id, body);
+  approve(
+    @Param('id') id: string,
+    @Body() body: ApproveScheduleChangeDto,
+    @CurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.service.approve(id, {
+      ...body,
+      reviewedBy: user?.id ?? body.reviewedBy,
+    });
   }
 
   @Post('requests/:id/deny')
   @ApiOperation({ summary: 'Deny one pending request (reviewNotes required)' })
   @ApiParam({ name: 'id', format: 'uuid' })
-  deny(@Param('id') id: string, @Body() body: DenyScheduleChangeDto) {
-    return this.service.deny(id, body);
+  deny(
+    @Param('id') id: string,
+    @Body() body: DenyScheduleChangeDto,
+    @CurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.service.deny(id, {
+      ...body,
+      reviewedBy: user?.id ?? body.reviewedBy,
+    });
   }
 
   @Post('bulk-decide')
   @ApiOperation({ summary: 'Approve or deny multiple pending requests' })
   @ApiCreatedResponse({ type: BulkDecisionResponseDto })
-  bulkDecide(@Body() body: BulkScheduleChangeDecisionDto) {
-    return this.service.bulkDecide(body);
+  bulkDecide(@Body() body: BulkScheduleChangeDecisionDto, @CurrentUser() user?: AuthenticatedUser) {
+    return this.service.bulkDecide({
+      ...body,
+      reviewedBy: user?.id ?? body.reviewedBy,
+    });
   }
 }

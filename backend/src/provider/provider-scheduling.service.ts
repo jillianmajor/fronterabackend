@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AppErrors } from '../common/errors/app-errors';
 import { rethrowAsHttp } from '../common/errors/to-http.exception';
+import { NotificationsService } from '../notifications/notifications.service';
 import { TOKENS } from '../config/tokens';
 import type { IProviderSchedulingRepository } from '../repository/persistence/interface';
 import {
@@ -24,6 +25,7 @@ export class ProviderSchedulingService {
   constructor(
     @Inject(TOKENS.ProviderSchedulingRepository)
     private readonly repo: IProviderSchedulingRepository,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async getContext(providerUserId: string) {
@@ -119,13 +121,26 @@ export class ProviderSchedulingService {
       });
     }
 
-    return this.repo.submitPrnAvailability({
+    const result = await this.repo.submitPrnAvailability({
       providerUserId,
       monthYear: dto.monthYear,
       noChanges,
       pacrDocumentId: dto.pacrDocumentId,
       days: normalizedDays,
     });
+
+    if (context.liaisonId) {
+      await this.notifications.notifyLiaisonSubmission({
+        liaisonUserId: context.liaisonId,
+        providerName: context.fullName ?? 'Provider',
+        monthYear: dto.monthYear,
+        dayCount: result.dayCount,
+        noChanges,
+        scheduleType: 'prn',
+      });
+    }
+
+    return result;
   }
 
   async getTimeOff(providerUserId: string, monthYear: string) {
@@ -229,12 +244,25 @@ export class ProviderSchedulingService {
       });
     }
 
-    return this.repo.submitSetTimeOff({
+    const result = await this.repo.submitSetTimeOff({
       providerUserId,
       monthYear: dto.monthYear,
       noChanges,
       pacrDocumentId: dto.pacrDocumentId,
       days: normalizedDays,
     });
+
+    if (context.liaisonId) {
+      await this.notifications.notifyLiaisonSubmission({
+        liaisonUserId: context.liaisonId,
+        providerName: context.fullName ?? 'Provider',
+        monthYear: dto.monthYear,
+        dayCount: result.dayCount,
+        noChanges,
+        scheduleType: 'set',
+      });
+    }
+
+    return result;
   }
 }

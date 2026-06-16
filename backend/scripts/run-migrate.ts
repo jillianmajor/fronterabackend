@@ -30,10 +30,15 @@ async function main(): Promise<void> {
   console.log('Applying migrations from', migrationsFolder);
   await migrate(db, { migrationsFolder });
 
-  const rlsPath = resolve(migrationsFolder, '0001_supabase_rls_functions.sql');
-  const rlsSql = readFileSync(rlsPath, 'utf8');
-  console.log('Applying', rlsPath);
-  await pool.query(rlsSql);
+  for (const name of [
+    '0001_supabase_rls_functions.sql',
+    '0004_notifications_delete_policy.sql',
+  ]) {
+    const path = resolve(migrationsFolder, name);
+    const sql = readFileSync(path, 'utf8');
+    console.log('Applying', path);
+    await pool.query(sql);
+  }
 
   await pool.end();
   console.log('Migrations applied successfully.');
