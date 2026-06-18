@@ -129,16 +129,14 @@ export class ProviderSchedulingService {
       days: normalizedDays,
     });
 
-    if (context.liaisonId) {
-      await this.notifications.notifyLiaisonSubmission({
-        liaisonUserId: context.liaisonId,
-        providerName: context.fullName ?? 'Provider',
-        monthYear: dto.monthYear,
-        dayCount: result.dayCount,
-        noChanges,
-        scheduleType: 'prn',
-      });
-    }
+    await this.notifications.notifyLiaisonSubmission({
+      liaisonUserId: context.liaisonId,
+      providerName: context.fullName ?? 'Provider',
+      monthYear: dto.monthYear,
+      dayCount: result.dayCount,
+      noChanges,
+      scheduleType: 'prn',
+    });
 
     return result;
   }
@@ -252,16 +250,14 @@ export class ProviderSchedulingService {
       days: normalizedDays,
     });
 
-    if (context.liaisonId) {
-      await this.notifications.notifyLiaisonSubmission({
-        liaisonUserId: context.liaisonId,
-        providerName: context.fullName ?? 'Provider',
-        monthYear: dto.monthYear,
-        dayCount: result.dayCount,
-        noChanges,
-        scheduleType: 'set',
-      });
-    }
+    await this.notifications.notifyLiaisonSubmission({
+      liaisonUserId: context.liaisonId,
+      providerName: context.fullName ?? 'Provider',
+      monthYear: dto.monthYear,
+      dayCount: result.dayCount,
+      noChanges,
+      scheduleType: 'set',
+    });
 
     return result;
   }

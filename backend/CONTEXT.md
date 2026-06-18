@@ -47,9 +47,9 @@ Unlike QuoteLogik's OCR/LLM pipelines, the current Frontera API is **synchronous
 
 Local `npm run start:dev` and deployed Lambda share the same `createApp()` bootstrap. **Docker:** `npm run docker:up` runs Postgres 16 + migrate/seed + API — see [docs/docker.md](./docs/docker.md). Only `./src` is bind-mounted; rebuild the `api` image after dependency changes. Or use cloud Supabase via `DATABASE_URL`. SSL is auto-disabled for `localhost` / Docker hostname `postgres` (`DATABASE_SSL=false` optional).
 
-### Auth (Q1)
+### Auth
 
-**Supabase Auth issues the JWT; Nest verifies it** on each request (`Authorization: Bearer <access_token>`). Not a separate Frontera login — see [docs/api-auth.md](./docs/api-auth.md). Validation via `SUPABASE_JWT_SECRET` or JWKS from `SUPABASE_URL`. Guard module is planned Q1; until it ships, routes are open in dev — don't assume auth is enforced when testing locally.
+**Supabase Auth issues the JWT; Nest verifies it** on each request (`Authorization: Bearer <access_token>`). Not a separate Frontera login — see [docs/api-auth.md](./docs/api-auth.md). Validation via JWKS from `SUPABASE_URL` (or optional `SUPABASE_JWT_SECRET` for HS256). Global `SupabaseJwtGuard` + `RolesGuard` enforce auth on all routes except `@Public()` (`GET /health`, `accept-invite`). Set `AUTH_DISABLED=true` locally only when testing without a session.
 
 Row-level security and helper functions (`has_role`, `get_user_org_ids`, `is_assigned_to`, `log_audit`) live in `drizzle/0001_supabase_rls_functions.sql` and run in Supabase Postgres. The Nest app uses a service-role or pooler connection; respect org/site scoping in repository queries when the guard is live.
 

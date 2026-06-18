@@ -141,6 +141,7 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
         scheduleType: profiles.scheduleType,
         weeklySchedule: providerWorkSites.weeklySchedule,
         primarySiteRegion: workSites.region,
+        primaryFacilityName: workSites.facilityName,
       })
       .from(profiles)
       .leftJoin(
@@ -161,6 +162,7 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
       region: r.profileRegion?.trim() || r.primarySiteRegion?.trim() || null,
       scheduleType: r.scheduleType,
       weeklySchedule: r.weeklySchedule,
+      facilityName: r.primaryFacilityName,
     }));
   }
 
@@ -226,8 +228,11 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
     };
   }
 
-  async getSubmissionProgress(company: string): Promise<MasterAvailabilitySubmissionProgress> {
-    const targetMonthYear = targetCollectionMonthStart();
+  async getSubmissionProgress(
+    company: string,
+    monthYear?: string,
+  ): Promise<MasterAvailabilitySubmissionProgress> {
+    const targetMonthYear = monthYear ?? targetCollectionMonthStart();
     const { label } = parseMonthYear(targetMonthYear);
     const deadline = submissionDeadlineForTargetMonth(targetMonthYear);
     const profileWhere = this.buildProfileWhere({ company, monthYear: targetMonthYear });

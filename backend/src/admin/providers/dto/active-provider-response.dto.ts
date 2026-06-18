@@ -16,6 +16,9 @@ export class ActiveProviderItemDto {
   @ApiPropertyOptional()
   phone?: string | null;
 
+  @ApiProperty({ example: 'set', description: 'Provider schedule type: `set` or `prn`' })
+  scheduleType!: string;
+
   @ApiPropertyOptional({
     description: 'Schedule line under provider name (e.g. Mon–Fri 8:00 AM – 4:00 PM)',
   })

@@ -30,33 +30,26 @@ export class SupabaseJwtService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     if (!isAuthEnforced(this.config)) {
-      this.logger.log('Auth enforcement disabled — routes are open without JWT');
+      if (this.hasVerificationConfig()) {
+        this.logger.log(
+          'Auth enforcement disabled — Bearer tokens will be parsed when sent (routes stay open without a token)',
+        );
+      } else {
+        this.logger.log('Auth enforcement disabled — routes are open without JWT');
+      }
       return;
     }
 
-    this.jose = await getJose();
+    await this.ensureVerificationReady();
+  }
 
-    const secret = this.config.get<string>('SUPABASE_JWT_SECRET')?.trim();
-    if (secret) {
-      this.hs256Secret = new TextEncoder().encode(secret);
-    }
-
-    const jwksUrl = resolveJwksUrl(this.config);
-    if (jwksUrl) {
-      this.jwks = this.jose.createRemoteJWKSet(new URL(jwksUrl));
-    }
-
-    if (!this.hs256Secret && !this.jwks) {
-      throw new Error(
-        'Auth is enforced but neither SUPABASE_JWT_SECRET nor SUPABASE_URL/SUPABASE_JWKS_URL is configured',
-      );
-    }
+  /** Whether JWT verification env is configured (used for optional parsing when auth is not enforced). */
+  canVerifyTokens(): boolean {
+    return this.hasVerificationConfig();
   }
 
   async authenticateBearerToken(token: string): Promise<AuthenticatedUser> {
-    if (!this.jose && isAuthEnforced(this.config)) {
-      this.jose = await getJose();
-    }
+    await this.ensureVerificationReady();
 
     const claims = await this.verifyToken(token);
     const userId = claims.sub;
@@ -121,5 +114,43 @@ export class SupabaseJwtService implements OnModuleInit {
       return 'Invalid token claims';
     }
     return 'Invalid token';
+  }
+
+  private hasVerificationConfig(): boolean {
+    const secret = this.config.get<string>('SUPABASE_JWT_SECRET')?.trim();
+    return !!(secret || resolveJwksUrl(this.config));
+  }
+
+  private async ensureVerificationReady(): Promise<void> {
+    if (this.jose && (this.hs256Secret || this.jwks)) {
+      return;
+    }
+
+    if (!this.hasVerificationConfig()) {
+      throw new Error(
+        'Auth is enforced but JWT verification is not configured — set SUPABASE_URL (JWKS) or SUPABASE_JWKS_URL',
+      );
+    }
+
+    this.jose = await getJose();
+
+    const secret = this.config.get<string>('SUPABASE_JWT_SECRET')?.trim();
+    if (secret) {
+      this.hs256Secret = new TextEncoder().encode(secret);
+    }
+
+    const jwksUrl = resolveJwksUrl(this.config);
+    if (jwksUrl) {
+      this.jwks = this.jose.createRemoteJWKSet(new URL(jwksUrl));
+      this.logger.log(`JWT verification via JWKS (${jwksUrl})`);
+    } else if (this.hs256Secret) {
+      this.logger.log('JWT verification via SUPABASE_JWT_SECRET (HS256)');
+    }
+
+    if (!this.hs256Secret && !this.jwks) {
+      throw new Error(
+        'Auth is enforced but JWT verification is not configured — set SUPABASE_URL (JWKS) or SUPABASE_JWKS_URL',
+      );
+    }
   }
 }

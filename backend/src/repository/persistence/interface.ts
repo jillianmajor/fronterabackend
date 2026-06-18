@@ -85,6 +85,7 @@ export interface ActiveProviderRow {
   fullName: string | null;
   email: string | null;
   phone: string | null;
+  scheduleType: string;
   scheduleSummary: string | null;
   specialty: string | null;
   state: string | null;
@@ -414,6 +415,7 @@ export interface SetProviderScheduleRow {
   region: string | null;
   scheduleType: string;
   weeklySchedule: unknown;
+  facilityName: string | null;
 }
 
 export interface MasterAvailabilityFilterOptions {
@@ -438,7 +440,10 @@ export interface IMasterAvailabilityRepository {
 
   getFilterOptions(company: string): Promise<MasterAvailabilityFilterOptions>;
 
-  getSubmissionProgress(company: string): Promise<MasterAvailabilitySubmissionProgress>;
+  getSubmissionProgress(
+    company: string,
+    monthYear?: string,
+  ): Promise<MasterAvailabilitySubmissionProgress>;
 
   listProvidersForClientExport(
     filters: MasterAvailabilityFilters,
@@ -596,6 +601,8 @@ export interface PrnAvailabilityDayRow {
   providerNotes: string | null;
   monthlyRequestId: string | null;
   monthlyStatus: string | null;
+  pacrDocumentId: string | null;
+  hasPacr: boolean;
 }
 
 export interface PrnAvailabilityFilterOptions {
@@ -791,6 +798,80 @@ export interface IHolidaysRepository {
 }
 
 // -----------------------------------------------------------------------------
+// Announcements (corporate compose + provider/client inbox)
+// -----------------------------------------------------------------------------
+
+export interface AnnouncementAudienceFilters {
+  q?: string;
+  company?: string;
+  regions?: string[];
+  liaisonNames?: string[];
+  recruiterNames?: string[];
+  facilityNames?: string[];
+  specialties?: string[];
+  scheduleType?: 'set' | 'prn';
+}
+
+export interface AnnouncementAudienceRow {
+  userId: string;
+  fullName: string | null;
+  email: string | null;
+  company: string | null;
+  region: string | null;
+  liaisonName: string | null;
+  recruiterName: string | null;
+  scheduleType: string | null;
+  facilityName: string | null;
+  specialty: string | null;
+}
+
+export interface AnnouncementRow {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  createdBy: string | null;
+  createdAt: Date;
+}
+
+export interface AnnouncementHistoryRow extends AnnouncementRow {
+  recipientCount: number;
+}
+
+export interface AnnouncementInboxItem {
+  recipientId: string;
+  readAt: Date | null;
+  announcementId: string;
+  title: string;
+  body: string;
+  type: string;
+  createdAt: Date;
+}
+
+export interface AnnouncementFilterOptions {
+  facilities: string[];
+  liaisonNames: string[];
+  recruiterNames: string[];
+  regions: string[];
+  specialties: string[];
+}
+
+export interface IAnnouncementsRepository {
+  listAudience(filters: AnnouncementAudienceFilters): Promise<AnnouncementAudienceRow[]>;
+  getFilterOptions(): Promise<AnnouncementFilterOptions>;
+  createAnnouncement(input: {
+    title: string;
+    body: string;
+    type: string;
+    createdBy?: string;
+    recipientUserIds: string[];
+  }): Promise<{ announcementId: string; recipientCount: number }>;
+  listAdminHistory(limit: number): Promise<AnnouncementHistoryRow[]>;
+  listInboxForUser(userId: string): Promise<AnnouncementInboxItem[]>;
+  markRecipientsRead(userId: string, recipientIds?: string[]): Promise<number>;
+}
+
+// -----------------------------------------------------------------------------
 // In-app notifications (Supabase `notifications` — Nest writes, FE reads via RLS)
 // -----------------------------------------------------------------------------
 
@@ -815,6 +896,8 @@ export interface NotificationRow {
 
 export interface INotificationsRepository {
   insert(input: NotificationInsertInput): Promise<NotificationRow>;
+  /** Distinct auth user ids with admin or internal_staff role. */
+  listCorporateReviewerUserIds(): Promise<string[]>;
 }
 
 // -----------------------------------------------------------------------------

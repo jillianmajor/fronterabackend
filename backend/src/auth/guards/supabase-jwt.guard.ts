@@ -18,12 +18,25 @@ export class SupabaseJwtGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (this.isPublic(context) || !isAuthEnforced(this.config)) {
+    if (this.isPublic(context)) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractBearerToken(request);
+    const enforced = isAuthEnforced(this.config);
+
+    if (!enforced) {
+      if (token && this.jwtService.canVerifyTokens()) {
+        try {
+          request.user = await this.jwtService.authenticateBearerToken(token);
+        } catch {
+          // Auth not enforced — allow the request but leave request.user unset.
+        }
+      }
+      return true;
+    }
+
     if (!token) {
       throw AppErrors.unauthorized('Missing Bearer token');
     }

@@ -14,6 +14,10 @@ import {
   MasterAvailabilitySubmissionProgressDto,
 } from './dto/master-availability-response.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import {
+  defaultMonthYear,
+  parseMonthYear,
+} from '../../repository/persistence/utils/master-availability.util';
 import { MasterAvailabilityService } from './master-availability.service';
 
 @ApiTags('Admin — Master PTO Calendar')
@@ -23,11 +27,18 @@ export class MasterAvailabilityController {
   constructor(private readonly masterAvailabilityService: MasterAvailabilityService) {}
 
   @Get('submission-progress')
-  @ApiOperation({ summary: 'Liaison submission cards for target month (today + 2 months)' })
+  @ApiOperation({
+    summary:
+      'Liaison submission cards for a month (defaults to collection target month when monthYear omitted)',
+  })
   @ApiQuery({ name: 'company', required: true, example: 'Frontera' })
+  @ApiQuery({ name: 'monthYear', required: false, example: '2026-06-01' })
   @ApiOkResponse({ type: MasterAvailabilitySubmissionProgressDto })
-  getSubmissionProgress(@Query('company') company: string) {
-    return this.masterAvailabilityService.getSubmissionProgress(company);
+  getSubmissionProgress(
+    @Query('company') company: string,
+    @Query('monthYear') monthYear?: string,
+  ) {
+    return this.masterAvailabilityService.getSubmissionProgress(company, monthYear);
   }
 
   @Get('filter-options')
@@ -101,7 +112,8 @@ export class MasterAvailabilityController {
   ): Promise<StreamableFile> {
     const buffer = await this.masterAvailabilityService.exportAceImoExcel(query);
     const { monthYear, company } = query;
-    const filename = `ACE-IMO-${company}-${monthYear ?? 'month'}.xlsx`;
+    const { label } = parseMonthYear(monthYear ?? defaultMonthYear());
+    const filename = `ACE-IMO - ${company} - ${label}.xlsx`;
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,

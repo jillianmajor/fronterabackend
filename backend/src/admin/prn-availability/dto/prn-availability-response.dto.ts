@@ -36,6 +36,15 @@ export class PrnAvailabilityDayDto {
 
   @ApiPropertyOptional()
   monthlyStatus?: string | null;
+
+  @ApiPropertyOptional()
+  region?: string | null;
+
+  @ApiPropertyOptional()
+  hasPacr?: boolean;
+
+  @ApiPropertyOptional()
+  pacrDocumentId?: string | null;
 }
 
 export class PrnAvailabilityQueueGroupDto {

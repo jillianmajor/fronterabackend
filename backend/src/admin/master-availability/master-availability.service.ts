@@ -41,9 +41,9 @@ export class MasterAvailabilityService {
     return this.repository.getFilterOptions(company);
   }
 
-  getSubmissionProgress(company: string) {
+  getSubmissionProgress(company: string, monthYear?: string) {
     this.assertCompany(company);
-    return this.repository.getSubmissionProgress(company);
+    return this.repository.getSubmissionProgress(company, monthYear);
   }
 
   async listTable(query: MasterAvailabilityQueryDto) {
@@ -89,6 +89,7 @@ export class MasterAvailabilityService {
         { header: 'Time Available', key: 'timeAvailable', width: 22 },
         { header: 'Status', key: 'status', width: 16 },
         { header: 'Specialty', key: 'specialty', width: 18 },
+        { header: 'Clinic', key: 'clinic', width: 28 },
         { header: 'Region', key: 'region', width: 14 },
         { header: 'Notes', key: 'notes', width: 28 },
       ];
@@ -106,6 +107,7 @@ export class MasterAvailabilityService {
               timeAvailable: e.timeAvailable ?? '',
               status: e.status,
               specialty: e.specialty ?? '',
+              clinic: e.facilityName ?? '',
               region: e.region ?? '',
               notes: e.notes ?? '',
             });
@@ -121,6 +123,7 @@ export class MasterAvailabilityService {
         { header: 'Time Available', key: 'timeAvailable', width: 22 },
         { header: 'Status', key: 'status', width: 16 },
         { header: 'Specialty', key: 'specialty', width: 18 },
+        { header: 'Clinic', key: 'clinic', width: 28 },
         { header: 'Region', key: 'region', width: 14 },
         { header: 'Notes', key: 'notes', width: 28 },
       ];
@@ -133,6 +136,7 @@ export class MasterAvailabilityService {
           timeAvailable: e.timeAvailable ?? '',
           status: e.status,
           specialty: e.specialty ?? '',
+          clinic: e.facilityName ?? '',
           region: e.region ?? '',
           notes: e.notes ?? '',
         });

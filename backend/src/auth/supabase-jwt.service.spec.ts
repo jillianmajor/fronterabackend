@@ -82,4 +82,27 @@ describe('SupabaseJwtService', () => {
       code: ErrorCode.UNAUTHORIZED,
     });
   });
+
+  it('lazy-inits verification when auth is not enforced but a token is parsed', async () => {
+    const config = {
+      get: (key: string) => {
+        const values: Record<string, string> = {
+          SUPABASE_JWT_SECRET: secret,
+          SUPABASE_URL: 'https://example.supabase.co',
+          NODE_ENV: 'development',
+          AUTH_DISABLED: 'true',
+        };
+        return values[key];
+      },
+    } as ConfigService;
+
+    const service = new SupabaseJwtService(config, authRepository as unknown as AuthRepository);
+    await service.onModuleInit();
+    const token = await signToken();
+
+    const user = await service.authenticateBearerToken(token);
+
+    expect(user.id).toBe(userId);
+    expect(service.canVerifyTokens()).toBe(true);
+  });
 });

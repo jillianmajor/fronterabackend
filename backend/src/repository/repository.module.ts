@@ -7,6 +7,7 @@ import { getPgSslConfig } from '../config/database-connection';
 import { TOKENS } from '../config/tokens';
 import { DbClient } from './persistence/db/db.client';
 import {
+  AnnouncementsRepository,
   MasterAvailabilityRepository,
   OnboardingCatalogRepository,
   OnboardingRepository,
@@ -118,6 +119,14 @@ import * as schema from './persistence/db/schema';
       useFactory: () => new Logger(NotificationsRepository.name),
     },
     {
+      provide: TOKENS.AnnouncementsRepository,
+      useClass: AnnouncementsRepository,
+    },
+    {
+      provide: TOKENS.AnnouncementsRepositoryLogger,
+      useFactory: () => new Logger(AnnouncementsRepository.name),
+    },
+    {
       provide: 'PG_POOL',
       useFactory: (config: ConfigService) => {
         const connectionString = config.get<string>('DATABASE_URL');
@@ -151,6 +160,7 @@ import * as schema from './persistence/db/schema';
     TOKENS.HolidaysRepository,
     TOKENS.ClientSchedulesRepository,
     TOKENS.NotificationsRepository,
+    TOKENS.AnnouncementsRepository,
   ],
 })
 export class RepositoryModule {}

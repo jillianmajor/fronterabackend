@@ -28,6 +28,8 @@ export const TOKENS = {
   ClientSchedulesRepositoryLogger: 'ClientSchedulesRepositoryLogger',
   NotificationsRepository: 'NotificationsRepository',
   NotificationsRepositoryLogger: 'NotificationsRepositoryLogger',
+  AnnouncementsRepository: 'AnnouncementsRepository',
+  AnnouncementsRepositoryLogger: 'AnnouncementsRepositoryLogger',
   S3Gateway: 'S3Gateway',
   SesGateway: 'SesGateway',
   SesGatewayLogger: 'SesGatewayLogger',

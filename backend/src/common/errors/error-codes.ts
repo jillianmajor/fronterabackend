@@ -189,6 +189,9 @@ export enum ErrorCode {
   /** Bulk deny missing `reviewNotes`. */
   BULK_DENY_NOTES_REQUIRED = 'BULK_DENY_NOTES_REQUIRED',
 
+  /** Single deny missing `reviewNotes`. */
+  DENY_NOTES_REQUIRED = 'DENY_NOTES_REQUIRED',
+
   // ---------------------------------------------------------------------------
   // Config / infrastructure
   // ---------------------------------------------------------------------------

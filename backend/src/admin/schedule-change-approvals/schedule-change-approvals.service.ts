@@ -164,6 +164,9 @@ export class ScheduleChangeApprovalsService {
   }
 
   async deny(id: string, body: DenyScheduleChangeDto) {
+    if (!body.reviewNotes?.trim()) {
+      throw AppErrors.denyNotesRequired();
+    }
     const updated = await this.repository.denyRequest(id, {
       reviewedBy: body.reviewedBy,
       reviewNotes: body.reviewNotes,

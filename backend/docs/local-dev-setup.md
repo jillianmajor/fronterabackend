@@ -28,17 +28,19 @@ Ask a teammate for these values (or copy from the shared secrets doc):
 
 | Variable | Purpose |
 |----------|---------|
-| `SUPABASE_URL` | Team Supabase project URL |
-| `SUPABASE_JWT_SECRET` | Dashboard → Settings → API → JWT Secret |
+| `SUPABASE_URL` | Team Supabase project URL (**required for JWT** — JWKS derived from this) |
+| `SUPABASE_JWKS_URL` | Optional; only if JWKS is not at the default path under `SUPABASE_URL` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Optional; needed for invite/password flows |
 
-For local API testing you can set:
+JWT auth is **on by default** when `SUPABASE_URL` is set (JWKS verification). The frontend sends the Supabase session token on every Nest call — sign in at http://localhost:8080 before exercising APIs.
+
+To use **Swagger** without signing in, temporarily set:
 
 ```env
 AUTH_DISABLED=true
 ```
 
-That skips JWT checks so you can use **Swagger** without signing in. Turn it off (`false`) when testing with the frontend.
+Restart the API after changing this flag.
 
 Do **not** set `DATABASE_URL` in `.env` for the full Docker stack — Compose overrides it to local Postgres.
 
@@ -125,7 +127,7 @@ If you prefer `npm run start:dev` on the host (faster TypeScript reload):
 npm run docker:db
 docker compose run --rm migrate
 cp .env.docker.example .env
-# Merge in SUPABASE_URL and SUPABASE_JWT_SECRET from .env.example
+# Merge in SUPABASE_URL from .env.example (JWKS auth — no JWT secret required)
 npm run start:dev
 ```
 
@@ -136,8 +138,8 @@ npm run start:dev
 | Port 3000 in use | Stop other services or change the `api` port mapping in `docker-compose.yml` |
 | Port 5432 in use | Stop local Postgres or change the `postgres` port mapping |
 | `Cannot find module` in API container | `docker compose build api && npm run docker:up` |
-| API returns 401 | Set `AUTH_DISABLED=true` in `.env` and restart, or sign in via frontend and use a valid JWT |
-| Login works but API returns empty/wrong data | `SUPABASE_URL` / JWT secret must match the project you logged into; re-run `npm run docker:reset` |
+| API returns 401 | Sign in via the frontend (Bearer token is attached automatically), or set `AUTH_DISABLED=true` for Swagger-only testing |
+| Login works but API returns empty/wrong data | `SUPABASE_URL` must match the project you logged into; re-run `npm run docker:reset` |
 | Migrations failed | `npm run docker:reset` |
 
 ## Architecture (local)

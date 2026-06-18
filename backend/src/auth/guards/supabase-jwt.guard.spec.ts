@@ -9,6 +9,7 @@ import { SupabaseJwtGuard } from './supabase-jwt.guard';
 describe('SupabaseJwtGuard', () => {
   const jwtService = {
     authenticateBearerToken: jest.fn(),
+    canVerifyTokens: jest.fn(),
   };
 
   const createGuard = (env: Record<string, string | undefined>) => {
@@ -43,6 +44,7 @@ describe('SupabaseJwtGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jwtService.canVerifyTokens.mockReturnValue(true);
   });
 
   it('allows public routes without a token when auth is enforced', async () => {
@@ -67,6 +69,27 @@ describe('SupabaseJwtGuard', () => {
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(jwtService.authenticateBearerToken).not.toHaveBeenCalled();
+  });
+
+  it('attaches request.user from Bearer token when auth is not enforced', async () => {
+    const guard = createGuard({ NODE_ENV: 'development', AUTH_DISABLED: 'true' });
+    const request = { headers: { authorization: 'Bearer valid-token' }, user: undefined };
+    const reflector = new Reflector();
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
+    (guard as unknown as { reflector: Reflector }).reflector = reflector;
+
+    const user = { id: 'user-1', roles: ['provider_user'] as const };
+    jwtService.authenticateBearerToken.mockResolvedValue(user);
+
+    const context = {
+      switchToHttp: () => ({ getRequest: () => request }),
+      getHandler: () => ({}),
+      getClass: () => ({}),
+    } as ExecutionContext;
+
+    await expect(guard.canActivate(context)).resolves.toBe(true);
+    expect(request.user).toEqual(user);
+    expect(jwtService.authenticateBearerToken).toHaveBeenCalledWith('valid-token');
   });
 
   it('rejects protected routes without Bearer token when auth is enforced', async () => {

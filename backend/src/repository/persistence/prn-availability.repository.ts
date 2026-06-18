@@ -157,6 +157,7 @@ export class PrnAvailabilityRepository implements IPrnAvailabilityRepository {
         primarySiteRegion: workSites.region,
         monthlyRequestId: monthlyAvailabilityRequests.id,
         monthlyStatus: monthlyAvailabilityRequests.status,
+        pacrDocumentId: timeOffRequests.pacrDocumentId,
       })
       .from(timeOffRequests)
       .innerJoin(profiles, eq(profiles.userId, timeOffRequests.providerId))

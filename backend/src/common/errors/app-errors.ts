@@ -304,7 +304,14 @@ export const AppErrors = {
   bulkDenyNotesRequired: () =>
     AppException.badRequest(
       ErrorCode.BULK_DENY_NOTES_REQUIRED,
-      'reviewNotes is required when denying in bulk',
+      'A denial reason is required when denying multiple requests',
+    ),
+
+  /** Single deny requires non-empty `reviewNotes` for audit trail. */
+  denyNotesRequired: () =>
+    AppException.badRequest(
+      ErrorCode.DENY_NOTES_REQUIRED,
+      'A denial reason is required',
     ),
 } as const;
 

@@ -64,30 +64,104 @@ export class NotificationsService {
   }
 
   /**
-   * Liaison alert when a provider submits availability or time-off — in-app only.
+   * Corporate review-queue alert when a provider submits availability or time-off — in-app only.
+   * Notifies the assigned liaison (when set) and all admin / internal_staff users.
    */
   async notifyLiaisonSubmission(params: {
-    liaisonUserId: string;
+    liaisonUserId?: string | null;
     providerName: string;
     monthYear: string;
     dayCount: number;
     noChanges: boolean;
     scheduleType: 'prn' | 'set';
-  }): Promise<{ inAppCreated: boolean; inAppId?: string; inAppError?: string }> {
+  }): Promise<{
+    recipients: number;
+    inAppCreated: number;
+    errors: string[];
+  }> {
     const copy = buildLiaisonSubmissionNotification(params);
+    const recipientIds = new Set<string>();
 
-    const inApp = await this.createInApp({
-      userId: params.liaisonUserId,
-      type: 'submission_pending_review',
-      title: copy.title,
-      message: copy.message,
-      link: copy.link,
-    });
+    const liaisonId = params.liaisonUserId?.trim();
+    if (liaisonId) {
+      recipientIds.add(liaisonId);
+    }
+
+    const reviewerIds = await this.notificationsRepo.listCorporateReviewerUserIds();
+    for (const id of reviewerIds) {
+      recipientIds.add(id);
+    }
+
+    if (recipientIds.size === 0) {
+      this.logger.warn(
+        `No recipients for submission review notification (${params.providerName}, ${params.monthYear})`,
+      );
+      return { recipients: 0, inAppCreated: 0, errors: ['No corporate reviewers found'] };
+    }
+
+    let inAppCreated = 0;
+    const errors: string[] = [];
+
+    for (const userId of recipientIds) {
+      const inApp = await this.createInApp({
+        userId,
+        type: 'submission_pending_review',
+        title: copy.title,
+        message: copy.message,
+        link: copy.link,
+      });
+      if (inApp.created) {
+        inAppCreated += 1;
+      } else if (inApp.error) {
+        errors.push(`${userId}: ${inApp.error}`);
+      }
+    }
 
     return {
-      inAppCreated: inApp.created,
-      inAppId: inApp.id,
-      inAppError: inApp.error,
+      recipients: recipientIds.size,
+      inAppCreated,
+      errors,
+    };
+  }
+
+  /**
+   * Provider announcement blast — in-app bell only (no email).
+   */
+  async notifyAnnouncementRecipients(params: {
+    recipientUserIds: string[];
+    title: string;
+    body: string;
+    link?: string;
+  }): Promise<{ recipients: number; inAppCreated: number; errors: string[] }> {
+    const uniqueIds = [...new Set(params.recipientUserIds.map((id) => id.trim()).filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      return { recipients: 0, inAppCreated: 0, errors: ['No recipients'] };
+    }
+
+    const message = params.body.trim().slice(0, 160);
+    const link = params.link ?? '/provider/announcements';
+    let inAppCreated = 0;
+    const errors: string[] = [];
+
+    for (const userId of uniqueIds) {
+      const inApp = await this.createInApp({
+        userId,
+        type: 'announcement',
+        title: `📢 ${params.title.trim()}`,
+        message,
+        link,
+      });
+      if (inApp.created) {
+        inAppCreated += 1;
+      } else if (inApp.error) {
+        errors.push(`${userId}: ${inApp.error}`);
+      }
+    }
+
+    return {
+      recipients: uniqueIds.length,
+      inAppCreated,
+      errors,
     };
   }
 

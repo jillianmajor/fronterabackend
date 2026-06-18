@@ -145,6 +145,7 @@ export function mergeWithSetScheduleBaseline(
     region: string | null;
     scheduleType: string;
     weeklySchedule: unknown;
+    facilityName?: string | null;
   }[],
   startDate: string,
   endDate: string,
@@ -178,7 +179,7 @@ export function mergeWithSetScheduleBaseline(
         displayStatus: 'approved',
         specialty: provider.specialty,
         region: provider.region,
-        facilityName: null,
+        facilityName: provider.facilityName ?? null,
         notes: null,
         changeType: null,
         createdAt: null,

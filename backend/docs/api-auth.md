@@ -22,7 +22,7 @@ There is **no separate** Frontera-issued login system planned. Lovable does **no
 Authorization: Bearer <supabase_access_token>
 ```
 
-That string **is** the Supabase session access token (a JWT). Nest validates signature and claims using `SUPABASE_JWT_SECRET` or Supabase **JWKS** (`SUPABASE_URL`).
+That string **is** the Supabase session access token (a JWT). Nest validates signature and claims using **JWKS** from `SUPABASE_URL` (recommended) or optionally `SUPABASE_JWT_SECRET` (HS256 legacy).
 
 ---
 
@@ -48,16 +48,20 @@ Password is used **once** at sign-in (to Supabase). All later Nest calls use the
 
 ### 1. Authentication (who are you?)
 
-**Planned Q1 — not fully implemented in code yet** (`CONTEXT.md`).
+**Shipped** — global `SupabaseJwtGuard` on all routes except `@Public()`.
 
-- Global or per-route **guard** on `admin/*` and `provider/*`.
 - Reject missing/invalid/expired tokens → `401 Unauthorized`.
 - Extract `sub` (user UUID) from JWT → maps to `auth.users.id` / `profiles.user_id`.
+- Load `user_roles` from Postgres and attach `request.user` (`id`, `email`, `roles`).
 
-Verify with either:
+Verify with:
 
-- **HS256** + `SUPABASE_JWT_SECRET` (JWT secret from Supabase dashboard), or  
-- **JWKS** from `https://<project>.supabase.co/auth/v1/.well-known/jwks.json`
+- **JWKS (default)** — set `SUPABASE_URL`; Nest fetches  
+  `https://<project>.supabase.co/auth/v1/.well-known/jwks.json`  
+  Or set `SUPABASE_JWKS_URL` to override that path.
+- **HS256 (optional legacy)** — `SUPABASE_JWT_SECRET` from Supabase dashboard; only needed if tokens are not signed with JWKS keys.
+
+Set `AUTH_DISABLED=true` only for temporary local/Swagger testing without a session.
 
 ### 2. Authorization (what may you do?)
 
@@ -91,17 +95,17 @@ RLS still matters for anything the FE reads/writes **directly** against Supabase
 
 ---
 
-## What is secure today vs planned
+## What is secure today
 
 | Item | Status |
 |------|--------|
-| Swagger `addBearerAuth()` | Documented expectation only |
-| JWT guard on routes | **Q1 — planned, not shipped** |
-| Routes enforce roles | **Planned** with guard + `@Roles()` or separate controllers |
-| Public routes | `GET /health` only (typical) |
-| Onboarding invite / accept | Special case: token + then JWT (see onboarding doc) |
+| Global `SupabaseJwtGuard` | **Shipped** — all routes except `@Public()` |
+| `RolesGuard` + `@Roles()` | **Shipped** on `admin/*`, `provider/*`, `client/*`, announcements |
+| `ProviderSelfGuard` | **Shipped** — providers may only access their own `providerId` (admins override) |
+| Public routes | `GET /health`, `GET/POST /accept-invite` |
+| Onboarding invite / accept | Token-based HTML flow (no JWT until user signs in) |
 
-Until the guard ships, **do not assume** APIs are protected in dev.
+Until `SUPABASE_URL` (or `SUPABASE_JWKS_URL`) is configured, auth is only enforced when `NODE_ENV=production` (Lambda). Locally, set `SUPABASE_URL` or use `AUTH_DISABLED=true` for open routes.
 
 ---
 
@@ -119,17 +123,22 @@ Until the guard ships, **do not assume** APIs are protected in dev.
 
 | Variable | Purpose |
 |----------|---------|
-| `SUPABASE_URL` | Project URL; JWKS URL derived from this |
-| `SUPABASE_JWT_SECRET` | Verify HS256 JWTs (if not using JWKS only) |
+| `SUPABASE_URL` | **Required for JWT auth** — project URL; JWKS URL derived automatically |
+| `SUPABASE_JWKS_URL` | Optional override if JWKS is not at the default path under `SUPABASE_URL` |
+| `SUPABASE_JWT_SECRET` | Optional HS256 fallback (legacy); not needed when using JWKS |
+| `AUTH_DISABLED` | Set `true` to bypass guards (local debugging only; default `false` on Lambda) |
 | `DATABASE_URL` | Nest DB connection (separate from user JWT) |
 
 ---
 
-## Implementation checklist (Q1)
+## Route coverage
 
-- [ ] `AuthModule` + `SupabaseJwtGuard` (or Passport JWT strategy)
-- [ ] Apply guard to `Admin*` and `Provider*` controllers (not `health`)
-- [ ] `@Roles('internal_staff', 'admin')` on `admin/*`
-- [ ] `@Roles('provider_user')` on `provider/*` (admin override if needed)
-- [ ] Pass `request.user.id` into repositories for scoping
-- [ ] Integration tests: no token → 401; wrong role → 403
+| Prefix | Roles | Notes |
+|--------|-------|-------|
+| `GET /health` | Public | Load balancer / smoke test |
+| `accept-invite` | Public | HTML onboarding form |
+| `admin/*` | `admin`, `internal_staff` | Corporate portal |
+| `provider/:providerId/*` | `provider_user`, `admin` | `ProviderSelfGuard` scopes provider id |
+| `client/*` | `client_user`, `admin`, `internal_staff` | Client portal |
+| `announcements/inbox` | All portal roles | Scoped to signed-in user |
+| `holidays` | All portal roles | `admin`, `internal_staff`, `provider_user`, `client_user` |

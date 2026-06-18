@@ -37,10 +37,11 @@ provider:
     NODE_ENV: production
     DATABASE_URL: ${env:DATABASE_URL}
     SUPABASE_URL: ${env:SUPABASE_URL, ''}
+    SUPABASE_JWKS_URL: ${env:SUPABASE_JWKS_URL, ''}
     SUPABASE_JWT_SECRET: ${env:SUPABASE_JWT_SECRET, ''}
     SUPABASE_SERVICE_ROLE_KEY: ${env:SUPABASE_SERVICE_ROLE_KEY, ''}
-    # Temporary: open API for end-to-end testing; set false before production.
-    AUTH_DISABLED: ${env:AUTH_DISABLED, 'true'}
+    # Set true only to bypass JWT guards (e.g. temporary debugging). Requires SUPABASE_URL (JWKS) when false.
+    AUTH_DISABLED: ${env:AUTH_DISABLED, 'false'}
     DOCUMENTS_BUCKET: ${self:custom.documentsBucketName}
     EXPORTS_BUCKET: ${self:custom.exportsBucketName}
     FRONTERA_AWS_REGION: ${self:provider.region}

@@ -48,6 +48,7 @@ export class ProvidersRepository implements IProvidersRepository {
         fullName: profiles.fullName,
         email: profiles.email,
         phone: profiles.phone,
+        scheduleType: profiles.scheduleType,
         workSchedule: profiles.workSchedule,
         specialty: profiles.specialty,
         state: profiles.state,
@@ -78,6 +79,7 @@ export class ProvidersRepository implements IProvidersRepository {
       fullName: row.fullName,
       email: row.email,
       phone: row.phone,
+      scheduleType: row.scheduleType,
       scheduleSummary:
         row.workSchedule?.trim() || this.weeklyScheduleToSummary(primarySchedules.get(row.userId)),
       specialty: row.specialty,

@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { inArray } from 'drizzle-orm';
 import { TOKENS } from '../../config/tokens';
 import type { IDbClient, INotificationsRepository, NotificationInsertInput, NotificationRow } from './interface';
-import { notifications } from './db/schema';
+import { notifications, userRoles } from './db/schema';
 
 @Injectable()
 export class NotificationsRepository implements INotificationsRepository {
@@ -44,5 +45,14 @@ export class NotificationsRepository implements INotificationsRepository {
       read: row.read,
       createdAt: row.createdAt,
     };
+  }
+
+  async listCorporateReviewerUserIds(): Promise<string[]> {
+    const rows = await this.dbClient.db
+      .selectDistinct({ userId: userRoles.userId })
+      .from(userRoles)
+      .where(inArray(userRoles.role, ['admin', 'internal_staff']));
+
+    return rows.map((r) => r.userId);
   }
 }

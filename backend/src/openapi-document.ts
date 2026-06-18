@@ -27,8 +27,7 @@ export function buildOpenApiDocument(app: INestApplication) {
         '',
         '**Lovable integration**',
         '- Import `openapi/frontera-api.yaml` after `npm run openapi:generate` (set `FRONTERA_API_PUBLIC_URL` in `.env` first).',
-        '- Admin routes: bearer auth (Supabase JWT) when guards are enabled.',
-        '- Provider routes (`/provider/{providerId}/…`): v1 uses `providerId` path param only (no JWT).',
+        '- All routes require `Authorization: Bearer <supabase_access_token>` except `GET /health` and `accept-invite`.',
         '- HTML accept-invite (`GET/POST /accept-invite`) is excluded from this spec.',
         '',
         '**Errors** — JSON body: `{ statusCode, code, message }` (see `ErrorCode` in repo).',
@@ -53,6 +52,7 @@ export function buildOpenApiDocument(app: INestApplication) {
     .addTag('Admin — Master Availability', 'Corporate availability calendar and export')
     .addTag('Admin — Schedule Change Approvals', 'Pending time-off review queue')
     .addTag('Admin — PRN Availability', 'PRN monthly submission review queue')
+    .addTag('Holidays', 'Optum clinic closure dates (portal roles)')
     .addTag('Provider', 'Provider portal — PRN calendar, PACR upload (path: providerId)')
     .build();
 

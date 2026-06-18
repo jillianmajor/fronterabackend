@@ -26,6 +26,7 @@ export function mapPrnAvailabilityDay(r: {
   primarySiteRegion: string | null;
   monthlyRequestId: string | null;
   monthlyStatus: string | null;
+  pacrDocumentId: string | null;
 }): PrnAvailabilityDayRow {
   const requestDate = String(r.requestDate);
   return {
@@ -44,6 +45,8 @@ export function mapPrnAvailabilityDay(r: {
     providerNotes: r.notes,
     monthlyRequestId: r.monthlyRequestId,
     monthlyStatus: r.monthlyStatus,
+    pacrDocumentId: r.pacrDocumentId,
+    hasPacr: !!r.pacrDocumentId,
   };
 }
 
