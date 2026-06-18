@@ -69,3 +69,5 @@ docs/          ADRs and workflow docs
 - [docs/onboarding-invite-flow.md](./docs/onboarding-invite-flow.md)
 - [docs/api-auth.md](./docs/api-auth.md)
 - [docs/adr/](./docs/adr/)
+
+**Frontend** is maintained in a separate repository (`frontera-frontend` / Lovable portal). Clone alongside this repo for local full-stack dev.

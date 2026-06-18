@@ -77,10 +77,12 @@ npm run docker:up:detach
 
 ## 4. Frontend (optional, full app)
 
+The portal lives in a **separate repo** (`frontera-frontend`). Clone it next to this backend repo if you use the layout below.
+
 In a second terminal:
 
 ```bash
-cd ../frontend
+cd ../frontera-frontend
 cp .env.example .env
 ```
 

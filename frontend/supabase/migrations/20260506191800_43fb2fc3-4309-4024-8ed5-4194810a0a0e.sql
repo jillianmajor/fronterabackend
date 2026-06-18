@@ -1,1 +1,0 @@
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS schedule_type text NOT NULL DEFAULT 'set' CHECK (schedule_type IN ('set','prn'));

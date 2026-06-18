@@ -1,1 +1,0 @@
-UPDATE public.profiles SET employment_type='W2', schedule_type='set' WHERE email='admin@fronterasearch.com';

@@ -1,2 +1,0 @@
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS company text NOT NULL DEFAULT 'Frontera' CHECK (company IN ('Frontera', '4tress'));
-ALTER TABLE public.provider_invites ADD COLUMN IF NOT EXISTS company text NOT NULL DEFAULT 'Frontera' CHECK (company IN ('Frontera', '4tress'));

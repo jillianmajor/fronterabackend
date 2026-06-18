@@ -1,1 +1,0 @@
-ALTER TABLE public.work_sites ADD COLUMN IF NOT EXISTS region TEXT;
