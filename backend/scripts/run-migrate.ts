@@ -33,6 +33,8 @@ async function main(): Promise<void> {
   for (const name of [
     '0001_supabase_rls_functions.sql',
     '0004_notifications_delete_policy.sql',
+    '0005_enable_rls_missing_tables.sql',
+    '0006_enable_rls_core_tables.sql',
   ]) {
     const path = resolve(migrationsFolder, name);
     const sql = readFileSync(path, 'utf8');

@@ -71,6 +71,14 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
       conditions.push(inArray(timeOffRequests.status, statusFilter as never));
     }
 
+    if (filters.scheduleTypes?.length) {
+      conditions.push(inArray(profiles.scheduleType, filters.scheduleTypes as never));
+    }
+
+    if (filters.changeTypes?.length) {
+      conditions.push(inArray(timeOffRequests.changeType, filters.changeTypes as never));
+    }
+
     const rows = await this.dbClient.db
       .select({
         requestId: timeOffRequests.id,

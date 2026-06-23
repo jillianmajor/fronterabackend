@@ -8,6 +8,10 @@ import type {
   MasterAvailabilityFilters,
 } from '../../repository/persistence/interface';
 import {
+  type MasterCalendarContext,
+  scopeFiltersForCalendarContext,
+} from '../../repository/persistence/utils/master-calendar-context.util';
+import {
   ALLOWED_MASTER_AVAILABILITY_COMPANIES,
   buildCalendarWeeks,
   defaultMonthYear,
@@ -46,10 +50,93 @@ export class MasterAvailabilityService {
     return this.repository.getSubmissionProgress(company, monthYear);
   }
 
-  async listTable(query: MasterAvailabilityQueryDto) {
+  listPrnTable(query: MasterAvailabilityQueryDto) {
+    return this.listTableForContext(query, 'prn');
+  }
+
+  listPtoTable(query: MasterAvailabilityQueryDto) {
+    return this.listTableForContext(query, 'pto');
+  }
+
+  getPrnCalendar(query: MasterAvailabilityQueryDto) {
+    return this.getCalendarForContext(query, 'prn');
+  }
+
+  getPtoCalendar(query: MasterAvailabilityQueryDto) {
+    return this.getCalendarForContext(query, 'pto');
+  }
+
+  exportPrnExcel(query: MasterAvailabilityExportQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext(query, 'prn', {
+      tableSheet: 'Master PRN Availability',
+      calendarSheet: 'Master PRN Availability Calendar',
+    });
+  }
+
+  exportPtoExcel(query: MasterAvailabilityExportQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext(query, 'pto', {
+      tableSheet: 'Master PTO',
+      calendarSheet: 'Master PTO Calendar',
+    });
+  }
+
+  async exportRegionExcel(
+    query: MasterAvailabilityRegionExportQueryDto,
+  ): Promise<{ filename: string; buffer: Buffer }[]> {
     const filters = this.toFilters(query);
     const { start, end } = parseMonthYear(filters.monthYear);
-    const all = await this.loadEntries(filters, start, end);
+    const [entries, providers] = await Promise.all([
+      this.loadPtoClientExportEntries(filters, start, end),
+      this.repository.listProvidersForClientExport(filters, start, end),
+    ]);
+    const regions = filters.regions ?? [];
+    const results = await buildRegionExportWorkbooks({
+      company: filters.company,
+      monthYear: filters.monthYear,
+      providers,
+      entries,
+      regions,
+    });
+    if (results.length === 0 && regions.length === 1) {
+      return [
+        await buildEmptyRegionExportWorkbook({
+          company: filters.company,
+          monthYear: filters.monthYear,
+          region: regions[0]!,
+        }),
+      ];
+    }
+    return results;
+  }
+
+  async exportAceImoExcel(query: MasterAvailabilityAceImoExportQueryDto): Promise<Buffer> {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const [entries, providers] = await Promise.all([
+      this.loadPtoClientExportEntries(filters, start, end),
+      this.repository.listProvidersForClientExport(filters, start, end),
+    ]);
+    const recruiterNames = query.recruiterIds?.length
+      ? (
+          await this.repository.getFilterOptions(filters.company)
+        ).recruiters
+          .filter((r) => query.recruiterIds!.includes(r.id))
+          .map((r) => r.name)
+      : undefined;
+
+    return buildAceImoExportWorkbook({
+      company: filters.company,
+      monthYear: filters.monthYear,
+      providers,
+      entries,
+      recruiterNames,
+    });
+  }
+
+  private async listTableForContext(query: MasterAvailabilityQueryDto, context: MasterCalendarContext) {
+    const filters = this.toFilters(query);
+    const { start, end } = parseMonthYear(filters.monthYear);
+    const all = await this.loadEntries(filters, start, end, context);
     const page = query.page ?? 1;
     const pageSize = Math.min(query.pageSize ?? 25, 100);
     const total = all.length;
@@ -65,22 +152,26 @@ export class MasterAvailabilityService {
     };
   }
 
-  async getCalendar(query: MasterAvailabilityQueryDto) {
+  private async getCalendarForContext(query: MasterAvailabilityQueryDto, context: MasterCalendarContext) {
     const filters = this.toFilters(query);
     const { start, end } = parseMonthYear(filters.monthYear);
-    const entries = await this.loadEntries(filters, start, end);
+    const entries = await this.loadEntries(filters, start, end, context);
     return buildCalendarWeeks(filters.monthYear, entries);
   }
 
-  async exportExcel(query: MasterAvailabilityExportQueryDto): Promise<Buffer> {
+  private async exportExcelForContext(
+    query: MasterAvailabilityExportQueryDto,
+    context: MasterCalendarContext,
+    sheetNames: { tableSheet: string; calendarSheet: string },
+  ): Promise<Buffer> {
     const filters = this.toFilters(query);
     const { start, end } = parseMonthYear(filters.monthYear);
-    const entries = (await this.loadEntries(filters, start, end)).slice(0, EXPORT_MAX_ROWS);
+    const entries = (await this.loadEntries(filters, start, end, context)).slice(0, EXPORT_MAX_ROWS);
 
     const workbook = new Workbook();
 
     if (query.view === 'calendar') {
-      const sheet = workbook.addWorksheet('Master Availability Calendar');
+      const sheet = workbook.addWorksheet(sheetNames.calendarSheet);
       sheet.columns = [
         { header: 'Date', key: 'date', width: 12 },
         { header: 'Weekday', key: 'weekday', width: 12 },
@@ -115,7 +206,7 @@ export class MasterAvailabilityService {
         }
       }
     } else {
-      const sheet = workbook.addWorksheet('Master Availability');
+      const sheet = workbook.addWorksheet(sheetNames.tableSheet);
       sheet.columns = [
         { header: 'Provider', key: 'providerName', width: 24 },
         { header: 'Liaison', key: 'liaisonName', width: 20 },
@@ -147,83 +238,45 @@ export class MasterAvailabilityService {
     return Buffer.from(buffer);
   }
 
-  async exportRegionExcel(
-    query: MasterAvailabilityRegionExportQueryDto,
-  ): Promise<{ filename: string; buffer: Buffer }[]> {
-    const filters = this.toFilters(query);
-    const { start, end } = parseMonthYear(filters.monthYear);
-    const [entries, providers] = await Promise.all([
-      this.loadEntries(filters, start, end),
-      this.repository.listProvidersForClientExport(filters, start, end),
-    ]);
-    const regions = filters.regions ?? [];
-    const results = await buildRegionExportWorkbooks({
-      company: filters.company,
-      monthYear: filters.monthYear,
-      providers,
-      entries,
-      regions,
-    });
-    if (results.length === 0 && regions.length === 1) {
-      return [
-        await buildEmptyRegionExportWorkbook({
-          company: filters.company,
-          monthYear: filters.monthYear,
-          region: regions[0]!,
-        }),
-      ];
-    }
-    return results;
-  }
-
-  async exportAceImoExcel(query: MasterAvailabilityAceImoExportQueryDto): Promise<Buffer> {
-    const filters = this.toFilters(query);
-    const { start, end } = parseMonthYear(filters.monthYear);
-    const [entries, providers] = await Promise.all([
-      this.loadEntries(filters, start, end),
-      this.repository.listProvidersForClientExport(filters, start, end),
-    ]);
-    const recruiterNames = query.recruiterIds?.length
-      ? (
-          await this.repository.getFilterOptions(filters.company)
-        ).recruiters
-          .filter((r) => query.recruiterIds!.includes(r.id))
-          .map((r) => r.name)
-      : undefined;
-
-    return buildAceImoExportWorkbook({
-      company: filters.company,
-      monthYear: filters.monthYear,
-      providers,
-      entries,
-      recruiterNames,
-    });
+  /** PTO region / ACE-IMO client exports — SET baseline + approved PTO time-off rows. */
+  private loadPtoClientExportEntries(
+    filters: MasterAvailabilityFilters,
+    start: string,
+    end: string,
+  ): Promise<MasterAvailabilityEntry[]> {
+    return this.loadEntries(filters, start, end, 'pto', { includeSetBaseline: true });
   }
 
   private async loadEntries(
     filters: MasterAvailabilityFilters,
     start: string,
     end: string,
+    context: MasterCalendarContext,
+    options: { includeSetBaseline?: boolean } = {},
   ): Promise<MasterAvailabilityEntry[]> {
-    const timeOffRows = await this.repository.listTimeOffEntries(filters, start, end);
-
-    const displayStatuses = filters.displayStatuses ?? [];
-    const includeBaseline =
-      displayStatuses.length === 0 ||
-      displayStatuses.includes('approved') ||
-      (!filters.statuses?.length && !filters.status);
+    const scoped = scopeFiltersForCalendarContext(filters, context);
+    const timeOffRows = await this.repository.listTimeOffEntries(scoped, start, end);
 
     let merged = timeOffRows;
-    if (includeBaseline) {
+    if (context === 'pto' && options.includeSetBaseline && this.shouldIncludeSetBaseline(filters)) {
       const setProviders = await this.repository.listSetProvidersForBaseline(filters);
       merged = mergeWithSetScheduleBaseline(timeOffRows, setProviders, start, end);
     }
 
-    if (displayStatuses.length > 0) {
-      merged = merged.filter((e) => displayStatuses.includes(e.displayStatus));
+    if (filters.displayStatuses?.length) {
+      merged = merged.filter((e) => filters.displayStatuses!.includes(e.displayStatus));
     }
 
     return merged.sort(sortAvailabilityEntries);
+  }
+
+  private shouldIncludeSetBaseline(filters: MasterAvailabilityFilters): boolean {
+    const displayStatuses = filters.displayStatuses ?? [];
+    return (
+      displayStatuses.length === 0 ||
+      displayStatuses.includes('approved') ||
+      (!filters.statuses?.length && !filters.status)
+    );
   }
 
   private toFilters(query: MasterAvailabilityQueryDto): MasterAvailabilityFilters {

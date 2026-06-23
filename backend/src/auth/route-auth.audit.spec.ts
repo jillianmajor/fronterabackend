@@ -5,6 +5,7 @@ import { join } from 'path';
 import { AdminAnnouncementsController } from '../admin/announcements/admin-announcements.controller';
 import { InvitesController } from '../admin/invites/invites.controller';
 import { MasterAvailabilityController } from '../admin/master-availability/master-availability.controller';
+import { MasterPtoCalendarController } from '../admin/master-availability/master-pto-calendar.controller';
 import { OnboardingController } from '../admin/onboarding/onboarding.controller';
 import { PrnAvailabilityController } from '../admin/prn-availability/prn-availability.controller';
 import { ProvidersController } from '../admin/providers/providers.controller';
@@ -24,6 +25,7 @@ const ROUTE_CONTROLLERS = [
   OnboardingController,
   ProvidersController,
   MasterAvailabilityController,
+  MasterPtoCalendarController,
   PrnAvailabilityController,
   ScheduleChangeApprovalsController,
   AdminAnnouncementsController,

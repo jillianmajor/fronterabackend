@@ -3,6 +3,9 @@ service: frontera-scheduling
 frameworkVersion: '3'
 useDotenv: true
 
+plugins:
+  - serverless-domain-manager
+
 provider:
   name: aws
   runtime: nodejs22.x
@@ -21,6 +24,11 @@ provider:
         - http://127.0.0.1:5173
         # Lovable / hosted portal (origin only — no path); add production domain when live
         - https://id-preview--128edd29-a6a6-490c-a898-4d428991ac14.lovable.app
+        # AWS Amplify (production frontend)
+        - https://main.dwerzw421qf76.amplifyapp.com
+        # Production portal (custom domain when live)
+        - https://fronteraportal.com
+        - https://www.fronteraportal.com
       allowedHeaders:
         - Content-Type
         - Authorization
@@ -48,15 +56,8 @@ provider:
     SES_FROM_EMAIL: ${self:custom.sesFromEmail}
     SES_CONFIGURATION_SET: ${self:custom.sesConfigurationSetName, ''}
     FRONTERA_APP_URL: ${env:FRONTERA_APP_URL, ''}
-    # Auto-derived from API Gateway on deploy — invite emails must hit Nest /accept-invite, not the portal.
-    FRONTERA_API_PUBLIC_URL:
-      Fn::Join:
-        - ''
-        - - 'https://'
-          - Ref: HttpApi
-          - '.execute-api.'
-          - Ref: AWS::Region
-          - '.amazonaws.com'
+    # https://api.fronteraportal.com via serverless-domain-manager; override via .env if needed.
+    FRONTERA_API_PUBLIC_URL: ${env:FRONTERA_API_PUBLIC_URL, self:custom.apiPublicUrl}
   iam:
     role:
       statements:
@@ -83,6 +84,21 @@ custom:
   exportsBucketName: frontera-${sls:stage}-exports
   sesFromEmail: ${env:SES_FROM_EMAIL, ''}
   sesConfigurationSetName: frontera-${sls:stage}-scheduling
+  # Wildcard ACM cert covers api.fronteraportal.com — serverless-domain-manager creates API GW domain + Route 53 on deploy.
+  apiDomainName: api.fronteraportal.com
+  apiCertificateArn: arn:aws:acm:us-east-1:567764214720:certificate/a37b431e-9835-4ef9-a683-3f4f16d4b489
+  apiPublicUrl: https://api.fronteraportal.com
+  customDomain:
+    domainName: ${self:custom.apiDomainName}
+    certificateArn: ${self:custom.apiCertificateArn}
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    endpointType: regional
+    securityPolicy: tls_1_2
+    apiType: http
+    autoDomain: true
 
 package:
   patterns:
@@ -137,7 +153,10 @@ resources:
 
   Outputs:
     ApiUrl:
-      Description: Public API base URL (invite emails and Swagger)
+      Description: Custom domain API base URL (invite emails and Swagger)
+      Value: ${self:custom.apiPublicUrl}
+    ApiGatewayUrl:
+      Description: Raw API Gateway URL (fallback)
       Value:
         Fn::Join:
           - ''

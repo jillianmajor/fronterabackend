@@ -82,6 +82,7 @@
     "js-yaml": "^4.2.0",
     "prettier": "^3.4.2",
     "serverless": "^3.40.0",
+    "serverless-domain-manager": "^10.2.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",

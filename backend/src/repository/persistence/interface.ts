@@ -369,6 +369,10 @@ export interface MasterAvailabilityFilters {
   region?: string;
   regions?: string[];
   displayStatuses?: string[];
+  /** When set, limits rows to these `profiles.schedule_type` values. */
+  scheduleTypes?: string[];
+  /** When set, limits rows to these `time_off_requests.change_type` values. */
+  changeTypes?: string[];
   q?: string;
 }
 
