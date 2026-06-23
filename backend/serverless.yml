@@ -55,9 +55,9 @@ provider:
     FRONTERA_AWS_REGION: ${self:provider.region}
     SES_FROM_EMAIL: ${self:custom.sesFromEmail}
     SES_CONFIGURATION_SET: ${self:custom.sesConfigurationSetName, ''}
-    FRONTERA_APP_URL: ${env:FRONTERA_APP_URL, ''}
-    # https://api.fronteraportal.com via serverless-domain-manager; override via .env if needed.
-    FRONTERA_API_PUBLIC_URL: ${env:FRONTERA_API_PUBLIC_URL, self:custom.apiPublicUrl}
+    # Production portal + API URLs — set in custom.* below (do not let empty .env vars override).
+    FRONTERA_APP_URL: ${self:custom.appUrl}
+    FRONTERA_API_PUBLIC_URL: ${self:custom.apiPublicUrl}
   iam:
     role:
       statements:
@@ -82,12 +82,13 @@ provider:
 custom:
   documentsBucketName: frontera-${sls:stage}-secure-documents
   exportsBucketName: frontera-${sls:stage}-exports
-  sesFromEmail: ${env:SES_FROM_EMAIL, ''}
+  sesFromEmail: ${env:SES_FROM_EMAIL, 'notifications@fronteraportal.com'}
   sesConfigurationSetName: frontera-${sls:stage}-scheduling
-  # Wildcard ACM cert covers api.fronteraportal.com — serverless-domain-manager creates API GW domain + Route 53 on deploy.
+  # Invite email links + post-accept redirect (update appUrl when production portal domain is live).
+  apiPublicUrl: https://api.fronteraportal.com
+  appUrl: https://main.dwerzw421qf76.amplifyapp.com/login?portal=provider
   apiDomainName: api.fronteraportal.com
   apiCertificateArn: arn:aws:acm:us-east-1:567764214720:certificate/a37b431e-9835-4ef9-a683-3f4f16d4b489
-  apiPublicUrl: https://api.fronteraportal.com
   customDomain:
     domainName: ${self:custom.apiDomainName}
     certificateArn: ${self:custom.apiCertificateArn}

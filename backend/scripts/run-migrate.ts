@@ -35,6 +35,7 @@ async function main(): Promise<void> {
     '0004_notifications_delete_policy.sql',
     '0005_enable_rls_missing_tables.sql',
     '0006_enable_rls_core_tables.sql',
+    '0007_notifications_read_update_policies.sql',
   ]) {
     const path = resolve(migrationsFolder, name);
     const sql = readFileSync(path, 'utf8');
