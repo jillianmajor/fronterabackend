@@ -84,9 +84,9 @@ custom:
   exportsBucketName: frontera-${sls:stage}-exports
   sesFromEmail: ${env:SES_FROM_EMAIL, 'notifications@fronteraportal.com'}
   sesConfigurationSetName: frontera-${sls:stage}-scheduling
-  # Invite email links + post-accept redirect (update appUrl when production portal domain is live).
+  # Invite email links + post-accept redirect to production portal.
   apiPublicUrl: https://api.fronteraportal.com
-  appUrl: https://main.dwerzw421qf76.amplifyapp.com/login?portal=provider
+  appUrl: https://fronteraportal.com/login?portal=provider
   apiDomainName: api.fronteraportal.com
   apiCertificateArn: arn:aws:acm:us-east-1:567764214720:certificate/a37b431e-9835-4ef9-a683-3f4f16d4b489
   customDomain:
