@@ -19,13 +19,19 @@ import type {
 import {
   assignments,
   monthlyAvailabilityRequests,
-  onboardingCompanies,
   profiles,
   providerWorkSites,
   timeOffRequests,
   userRoles,
   workSites,
 } from './db/schema';
+import {
+  listCatalogCompanyNames,
+  listCatalogRegionNames,
+  listCatalogStaffPeople,
+  mergePeopleOptions,
+  mergeStringOptions,
+} from './utils/filter-options-catalog.util';
 import {
   MASTER_AVAILABILITY_STATUSES,
   PTO_DISPLAY_STATUSES,
@@ -180,59 +186,62 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
   async getFilterOptions(company: string): Promise<MasterAvailabilityFilterOptions> {
     const profileWhere = this.buildProfileWhere({ company, monthYear: '2000-01-01' });
 
-    const companyRows = await this.dbClient.db
-      .select({ name: onboardingCompanies.name })
-      .from(onboardingCompanies)
-      .where(eq(onboardingCompanies.isActive, true))
-      .orderBy(onboardingCompanies.sortOrder);
+    const [
+      companies,
+      catalogStaff,
+      catalogRegions,
+      liaisonRows,
+      recruiterRows,
+      profileRegionRows,
+      siteRegionRows,
+    ] = await Promise.all([
+      listCatalogCompanyNames(this.dbClient),
+      listCatalogStaffPeople(this.dbClient),
+      listCatalogRegionNames(this.dbClient),
+      this.dbClient.db
+        .selectDistinct({
+          id: profiles.liaisonId,
+          name: profiles.liaisonName,
+        })
+        .from(profiles)
+        .where(and(profileWhere, sql`${profiles.liaisonId} IS NOT NULL`)),
+      this.dbClient.db
+        .selectDistinct({
+          id: profiles.recruiterId,
+          name: profiles.recruiterName,
+        })
+        .from(profiles)
+        .where(and(profileWhere, sql`${profiles.recruiterId} IS NOT NULL`)),
+      this.dbClient.db
+        .selectDistinct({ region: profiles.region })
+        .from(profiles)
+        .where(and(profileWhere, sql`${profiles.region} IS NOT NULL`)),
+      this.dbClient.db
+        .selectDistinct({ region: workSites.region })
+        .from(profiles)
+        .innerJoin(providerWorkSites, eq(providerWorkSites.providerId, profiles.userId))
+        .innerJoin(workSites, eq(workSites.id, providerWorkSites.workSiteId))
+        .where(and(profileWhere, sql`${workSites.region} IS NOT NULL`)),
+    ]);
 
-    const liaisonRows = await this.dbClient.db
-      .selectDistinct({
-        id: profiles.liaisonId,
-        name: profiles.liaisonName,
-      })
-      .from(profiles)
-      .where(and(profileWhere, sql`${profiles.liaisonId} IS NOT NULL`));
-
-    const recruiterRows = await this.dbClient.db
-      .selectDistinct({
-        id: profiles.recruiterId,
-        name: profiles.recruiterName,
-      })
-      .from(profiles)
-      .where(and(profileWhere, sql`${profiles.recruiterId} IS NOT NULL`));
-
-    const profileRegionRows = await this.dbClient.db
-      .selectDistinct({ region: profiles.region })
-      .from(profiles)
-      .where(and(profileWhere, sql`${profiles.region} IS NOT NULL`));
-
-    const siteRegionRows = await this.dbClient.db
-      .selectDistinct({ region: workSites.region })
-      .from(profiles)
-      .innerJoin(providerWorkSites, eq(providerWorkSites.providerId, profiles.userId))
-      .innerJoin(workSites, eq(workSites.id, providerWorkSites.workSiteId))
-      .where(and(profileWhere, sql`${workSites.region} IS NOT NULL`));
-
-    const regions = new Set<string>();
-    for (const r of [...profileRegionRows, ...siteRegionRows]) {
-      const v = r.region?.trim();
-      if (v) regions.add(v);
-    }
+    const liaisonFromProviders = liaisonRows
+      .filter((l) => l.id && l.name)
+      .map((l) => ({ id: l.id!, name: l.name! }));
+    const recruiterFromProviders = recruiterRows
+      .filter((r) => r.id && r.name)
+      .map((r) => ({ id: r.id!, name: r.name! }));
 
     return {
-      companies: companyRows.map((c) => c.name),
-      liaisons: liaisonRows
-        .filter((l) => l.id && l.name)
-        .map((l) => ({ id: l.id!, name: l.name! }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-      recruiters: recruiterRows
-        .filter((r) => r.id && r.name)
-        .map((r) => ({ id: r.id!, name: r.name! }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+      companies,
+      liaisons: mergePeopleOptions(catalogStaff, liaisonFromProviders),
+      recruiters: mergePeopleOptions(catalogStaff, recruiterFromProviders),
       statuses: [...MASTER_AVAILABILITY_STATUSES],
       displayStatuses: [...PTO_DISPLAY_STATUSES],
-      regions: [...regions].sort((a, b) => a.localeCompare(b)),
+      regions: mergeStringOptions(
+        catalogRegions,
+        profileRegionRows.map((r) => r.region ?? ''),
+        siteRegionRows.map((r) => r.region ?? ''),
+      ),
     };
   }
 

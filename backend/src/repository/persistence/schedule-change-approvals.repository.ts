@@ -17,7 +17,6 @@ import type {
 import {
   assignments,
   documents,
-  onboardingCompanies,
   profiles,
   providerWorkSites,
   timeOffRequests,
@@ -25,6 +24,13 @@ import {
   workSites,
 } from './db/schema';
 import { mapRowToScheduleChangeRequest } from './utils/schedule-change-approvals.util';
+import {
+  listCatalogCompanyNames,
+  listCatalogRegionNames,
+  listCatalogStaffPeople,
+  mergePeopleOptions,
+  mergeStringOptions,
+} from './utils/filter-options-catalog.util';
 
 // =============================================================================
 // Schedule Change Approvals
@@ -44,45 +50,42 @@ export class ScheduleChangeApprovalsRepository implements IScheduleChangeApprova
   async getFilterOptions(company: string): Promise<ScheduleChangeApprovalsFilterOptions> {
     const profileWhere = this.buildProfileWhere({ company });
 
-    const companyRows = await this.dbClient.db
-      .select({ name: onboardingCompanies.name })
-      .from(onboardingCompanies)
-      .where(eq(onboardingCompanies.isActive, true))
-      .orderBy(onboardingCompanies.sortOrder);
+    const [companies, catalogStaff, catalogRegions, liaisonRows, profileRegionRows, siteRegionRows] =
+      await Promise.all([
+        listCatalogCompanyNames(this.dbClient),
+        listCatalogStaffPeople(this.dbClient),
+        listCatalogRegionNames(this.dbClient),
+        this.dbClient.db
+          .selectDistinct({
+            id: profiles.liaisonId,
+            name: profiles.liaisonName,
+          })
+          .from(profiles)
+          .where(and(profileWhere, sql`${profiles.liaisonId} IS NOT NULL`)),
+        this.dbClient.db
+          .selectDistinct({ region: profiles.region })
+          .from(profiles)
+          .where(and(profileWhere, sql`${profiles.region} IS NOT NULL`)),
+        this.dbClient.db
+          .selectDistinct({ region: workSites.region })
+          .from(profiles)
+          .innerJoin(providerWorkSites, eq(providerWorkSites.providerId, profiles.userId))
+          .innerJoin(workSites, eq(workSites.id, providerWorkSites.workSiteId))
+          .where(and(profileWhere, sql`${workSites.region} IS NOT NULL`)),
+      ]);
 
-    const liaisonRows = await this.dbClient.db
-      .selectDistinct({
-        id: profiles.liaisonId,
-        name: profiles.liaisonName,
-      })
-      .from(profiles)
-      .where(and(profileWhere, sql`${profiles.liaisonId} IS NOT NULL`));
-
-    const profileRegionRows = await this.dbClient.db
-      .selectDistinct({ region: profiles.region })
-      .from(profiles)
-      .where(and(profileWhere, sql`${profiles.region} IS NOT NULL`));
-
-    const siteRegionRows = await this.dbClient.db
-      .selectDistinct({ region: workSites.region })
-      .from(profiles)
-      .innerJoin(providerWorkSites, eq(providerWorkSites.providerId, profiles.userId))
-      .innerJoin(workSites, eq(workSites.id, providerWorkSites.workSiteId))
-      .where(and(profileWhere, sql`${workSites.region} IS NOT NULL`));
-
-    const regions = new Set<string>();
-    for (const r of [...profileRegionRows, ...siteRegionRows]) {
-      const v = r.region?.trim();
-      if (v) regions.add(v);
-    }
+    const liaisonFromProviders = liaisonRows
+      .filter((l) => l.id && l.name)
+      .map((l) => ({ id: l.id!, name: l.name! }));
 
     return {
-      companies: companyRows.map((c) => c.name),
-      liaisons: liaisonRows
-        .filter((l) => l.id && l.name)
-        .map((l) => ({ id: l.id!, name: l.name! }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-      regions: [...regions].sort((a, b) => a.localeCompare(b)),
+      companies,
+      liaisons: mergePeopleOptions(catalogStaff, liaisonFromProviders),
+      regions: mergeStringOptions(
+        catalogRegions,
+        profileRegionRows.map((r) => r.region ?? ''),
+        siteRegionRows.map((r) => r.region ?? ''),
+      ),
     };
   }
 

@@ -21,7 +21,8 @@ CREATE POLICY "Admins manage notifications" ON public.notifications
 -- Live bell updates via Supabase Realtime (no-op if already in publication).
 DO $realtime$
 BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime')
+  AND NOT EXISTS (
     SELECT 1
     FROM pg_publication_tables
     WHERE pubname = 'supabase_realtime'

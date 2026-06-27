@@ -30,8 +30,13 @@ async function main(): Promise<void> {
   console.log('Applying migrations from', migrationsFolder);
   await migrate(db, { migrationsFolder });
 
+  const bootstrapPath = resolve(process.cwd(), 'docker/postgres/init/02-auth-stub.sql');
+  console.log('Applying local Supabase auth stub from', bootstrapPath);
+  await pool.query(readFileSync(bootstrapPath, 'utf8'));
+
   for (const name of [
     '0001_supabase_rls_functions.sql',
+    '0003_authenticated_grants.sql',
     '0004_notifications_delete_policy.sql',
     '0005_enable_rls_missing_tables.sql',
     '0006_enable_rls_core_tables.sql',
