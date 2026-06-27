@@ -239,11 +239,13 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
   async getSubmissionProgress(
     company: string,
     monthYear?: string,
+    scheduleTypes: Array<'prn' | 'set'> = ['prn'],
   ): Promise<MasterAvailabilitySubmissionProgress> {
     const targetMonthYear = monthYear ?? targetCollectionMonthStart();
     const { label } = parseMonthYear(targetMonthYear);
     const deadline = submissionDeadlineForTargetMonth(targetMonthYear);
     const profileWhere = this.buildProfileWhere({ company, monthYear: targetMonthYear });
+    const scheduleWhere = inArray(profiles.scheduleType, scheduleTypes);
 
     const providerRows = await this.dbClient.db
       .select({
@@ -252,7 +254,7 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
         liaisonName: profiles.liaisonName,
       })
       .from(profiles)
-      .where(and(profileWhere, sql`${profiles.liaisonId} IS NOT NULL`));
+      .where(and(profileWhere, scheduleWhere, sql`${profiles.liaisonId} IS NOT NULL`));
 
     const submittedRows = await this.dbClient.db
       .selectDistinct({ providerId: monthlyAvailabilityRequests.providerId })
@@ -261,6 +263,7 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
       .where(
         and(
           profileWhere,
+          scheduleWhere,
           eq(monthlyAvailabilityRequests.monthYear, targetMonthYear),
           sql`${monthlyAvailabilityRequests.status} != 'requested'`,
         ),
@@ -322,6 +325,8 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
         scheduleType: profiles.scheduleType,
         workSiteId: providerWorkSites.workSiteId,
         facilityName: workSites.facilityName,
+        city: workSites.city,
+        state: workSites.state,
         siteRegion: workSites.region,
         weeklySchedule: providerWorkSites.weeklySchedule,
       })
@@ -340,6 +345,8 @@ export class MasterAvailabilityRepository implements IMasterAvailabilityReposito
       liaisonName: r.liaisonName,
       region: r.profileRegion?.trim() || r.siteRegion?.trim() || null,
       facilityName: r.facilityName,
+      city: r.city,
+      state: r.state,
       workSiteId: r.workSiteId,
       weeklySchedule: r.weeklySchedule,
       scheduleType: r.scheduleType,

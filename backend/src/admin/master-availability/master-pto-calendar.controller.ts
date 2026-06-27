@@ -11,12 +11,11 @@ import {
   MasterAvailabilityCalendarResponseDto,
   MasterAvailabilityFilterOptionsDto,
   MasterAvailabilityListResponseDto,
+  MasterAvailabilitySubmissionProgressDto,
 } from './dto/master-availability-response.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import {
-  defaultMonthYear,
-  parseMonthYear,
-} from '../../repository/persistence/utils/master-availability.util';
+import { aceImoExportFilename } from '../../repository/persistence/utils/export-filename.util';
+import { defaultMonthYear } from '../../repository/persistence/utils/master-availability.util';
 import { MasterAvailabilityService } from './master-availability.service';
 
 @ApiTags('Admin — Master PTO Calendar')
@@ -31,6 +30,21 @@ export class MasterPtoCalendarController {
   @ApiOkResponse({ type: MasterAvailabilityFilterOptionsDto })
   getFilterOptions(@Query('company') company: string) {
     return this.masterAvailabilityService.getFilterOptions(company);
+  }
+
+  @Get('submission-progress')
+  @ApiOperation({
+    summary:
+      'SET liaison submission cards for a month (defaults to collection target month when monthYear omitted)',
+  })
+  @ApiQuery({ name: 'company', required: true, example: 'Frontera' })
+  @ApiQuery({ name: 'monthYear', required: false, example: '2026-07-01' })
+  @ApiOkResponse({ type: MasterAvailabilitySubmissionProgressDto })
+  getSubmissionProgress(
+    @Query('company') company: string,
+    @Query('monthYear') monthYear?: string,
+  ) {
+    return this.masterAvailabilityService.getPtoSubmissionProgress(company, monthYear);
   }
 
   @Get()
@@ -50,7 +64,10 @@ export class MasterPtoCalendarController {
   }
 
   @Get('export')
-  @ApiOperation({ summary: 'Export Master PTO table or calendar view to Excel' })
+  @ApiOperation({
+    summary: 'Export Master PTO table or calendar view to Excel (deprecated — use export/table or export/calendar)',
+    deprecated: true,
+  })
   @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   async export(
     @Query() query: MasterAvailabilityExportQueryDto,
@@ -58,6 +75,46 @@ export class MasterPtoCalendarController {
   ): Promise<StreamableFile> {
     const buffer = await this.masterAvailabilityService.exportPtoExcel(query);
     const filename = `master-pto-${query.view}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': String(buffer.length),
+    });
+    return new StreamableFile(buffer, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+  }
+
+  @Get('export/table')
+  @ApiOperation({ summary: 'Export Master PTO table view to Excel' })
+  @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  async exportTable(
+    @Query() query: MasterAvailabilityQueryDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const buffer = await this.masterAvailabilityService.exportPtoTableExcel(query);
+    const filename = `master-pto-table-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': String(buffer.length),
+    });
+    return new StreamableFile(buffer, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+  }
+
+  @Get('export/calendar')
+  @ApiOperation({ summary: 'Export Master PTO calendar view to Excel' })
+  @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  async exportCalendar(
+    @Query() query: MasterAvailabilityQueryDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const buffer = await this.masterAvailabilityService.exportPtoCalendarExcel(query);
+    const filename = `master-pto-calendar-${new Date().toISOString().slice(0, 10)}.xlsx`;
     res.set({
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -97,9 +154,7 @@ export class MasterPtoCalendarController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const buffer = await this.masterAvailabilityService.exportAceImoExcel(query);
-    const { monthYear, company } = query;
-    const { label } = parseMonthYear(monthYear ?? defaultMonthYear());
-    const filename = `ACE-IMO - ${company} - ${label}.xlsx`;
+    const filename = aceImoExportFilename(query.company, query.monthYear ?? defaultMonthYear());
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,

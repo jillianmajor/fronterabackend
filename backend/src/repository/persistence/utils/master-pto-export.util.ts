@@ -1,6 +1,11 @@
 import type { Borders, Cell, Style, Worksheet } from 'exceljs';
 import { Workbook } from 'exceljs';
-import type { MasterAvailabilityClientExportProvider, MasterAvailabilityEntry } from '../interface';
+import type {
+  ClientScheduleRow,
+  MasterAvailabilityClientExportProvider,
+  MasterAvailabilityEntry,
+} from '../interface';
+import { regionExportFilename } from './export-filename.util';
 import {
   formatIsoDate,
   parseIsoDate,
@@ -55,12 +60,28 @@ const scheduleCellStyle: Partial<Style> = {
   border: ALL_BORDERS,
 };
 
-function specialtyGmLabel(specialty: string | null): string {
-  if (!specialty) return '';
-  const lower = specialty.toLowerCase();
-  if (lower.includes('nurse') || lower.includes('np')) return 'GM 1';
-  if (lower.includes('physician') || lower.includes('pa')) return 'GM 2';
-  return specialty;
+
+/** Tab name for facility sheets, e.g. "Denver, CO". */
+export function facilityExportTabName(
+  facilityName: string,
+  city?: string | null,
+  state?: string | null,
+): string {
+  if (city?.trim() && state?.trim()) return `${city.trim()}, ${state.trim()}`;
+  if (city?.trim()) return city.trim();
+  return facilityName;
+}
+
+function sanitizeWorksheetName(name: string, usedNames: Set<string>): string {
+  const base = (name.replace(/[\/?*[\]:]/g, '').trim() || 'Schedule').slice(0, 31);
+  let candidate = base;
+  let suffix = 1;
+  while (usedNames.has(candidate)) {
+    const ending = ` ${suffix++}`;
+    candidate = `${base.slice(0, 31 - ending.length)}${ending}`;
+  }
+  usedNames.add(candidate);
+  return candidate;
 }
 
 function applyStyle(cell: Cell, style: Partial<Style>): void {
@@ -107,7 +128,7 @@ function uniqueCalendarProviders(
       specialty: provider.specialty?.trim() || 'Provider',
     });
   }
-  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return [...seen.values()];
 }
 
 function buildCalendarHoursMap(
@@ -224,14 +245,38 @@ function addCalendarScheduleSheet(
   }
 }
 
-function approvedEntry(
-  providerUserId: string,
-  date: string,
-  offByProviderDate: Map<string, MasterAvailabilityEntry>,
-): MasterAvailabilityEntry | undefined {
-  const entry = offByProviderDate.get(`${providerUserId}:${date}`);
-  if (!entry || entry.status !== 'approved') return undefined;
-  return entry;
+function buildClientScheduleHoursMap(rows: ClientScheduleRow[], monthYear: string): Map<string, string> {
+  const map = new Map<string, string>();
+  const { start, end } = parseMonthYear(monthYear);
+  const rangeStart = parseIsoDate(start);
+  const rangeEnd = parseIsoDate(end);
+  const timeOffByProvider = new Map(rows.map((r) => [r.providerUserId, new Set(r.timeOffDates)]));
+
+  for (const row of rows) {
+    const providerName = row.fullName?.trim() || 'Unknown';
+    for (let d = new Date(rangeStart); d <= rangeEnd; d.setDate(d.getDate() + 1)) {
+      if (d.getDay() === 0 || d.getDay() === 6) continue;
+      const date = formatIsoDate(d);
+      if (timeOffByProvider.get(row.providerUserId)?.has(date)) continue;
+      const hours = hoursForWeekday(row.weeklySchedule, date);
+      if (!hours) continue;
+      map.set(`${providerName}|${date}`, compactExportHours(hours));
+    }
+  }
+
+  return map;
+}
+
+function uniqueClientCalendarProviders(
+  rows: ClientScheduleRow[],
+): { name: string; specialty: string }[] {
+  const seen = new Map<string, { name: string; specialty: string }>();
+  for (const row of rows) {
+    const name = row.fullName?.trim() || 'Unknown';
+    if (seen.has(name)) continue;
+    seen.set(name, { name, specialty: row.specialty?.trim() || 'Provider' });
+  }
+  return [...seen.values()];
 }
 
 function hoursForWeekday(weeklySchedule: unknown, date: string): string {
@@ -244,69 +289,6 @@ function hoursForWeekday(weeklySchedule: unknown, date: string): string {
   return DEFAULT_EXPORT_HOURS;
 }
 
-function buildOffDayMap(entries: MasterAvailabilityEntry[]): Map<string, MasterAvailabilityEntry> {
-  const map = new Map<string, MasterAvailabilityEntry>();
-  for (const e of entries) {
-    if (e.source !== 'time_off') continue;
-    map.set(`${e.providerUserId}:${e.date}`, e);
-  }
-  return map;
-}
-
-function monthDays(start: string, end: string): string[] {
-  const days: string[] = [];
-  const s = parseIsoDate(start);
-  const e = parseIsoDate(end);
-  for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
-    days.push(formatIsoDate(d));
-  }
-  return days;
-}
-
-function addFacilitySheet(
-  workbook: Workbook,
-  sheetName: string,
-  providers: MasterAvailabilityClientExportProvider[],
-  monthYear: string,
-  offByProviderDate: Map<string, MasterAvailabilityEntry>,
-): void {
-  const { start, end } = parseMonthYear(monthYear);
-  const days = monthDays(start, end);
-  const sheet = workbook.addWorksheet(sheetName.slice(0, 31));
-  const header = ['Provider', 'Specialty', ...days.map((d) => d.slice(5))];
-  sheet.addRow(header);
-  sheet.getRow(1).font = { bold: true };
-
-  for (const provider of providers) {
-    const row: (string | number)[] = [provider.providerName, specialtyGmLabel(provider.specialty)];
-    for (const date of days) {
-      const dow = parseIsoDate(date).getDay();
-      if (!WEEKDAY_INDICES.has(dow)) {
-        row.push('');
-        continue;
-      }
-
-      const entry = approvedEntry(provider.providerUserId, date, offByProviderDate);
-      if (entry?.changeType === 'remove_day' || entry?.timeAvailable === 'Unavailable') {
-        row.push('');
-        continue;
-      }
-      if (entry?.timeAvailable) {
-        row.push(entry.timeAvailable);
-        continue;
-      }
-
-      if (provider.scheduleType === 'set') {
-        const hours = hoursForWeekday(provider.weeklySchedule, date);
-        row.push(hours || DEFAULT_EXPORT_HOURS);
-      } else {
-        row.push('');
-      }
-    }
-    sheet.addRow(row);
-  }
-}
-
 export async function buildRegionExportWorkbooks(params: {
   company: string;
   monthYear: string;
@@ -314,7 +296,11 @@ export async function buildRegionExportWorkbooks(params: {
   entries: MasterAvailabilityEntry[];
   regions: string[];
 }): Promise<{ filename: string; buffer: Buffer }[]> {
-  const offByProviderDate = buildOffDayMap(params.entries);
+  const hoursByProviderDate = buildCalendarHoursMap(
+    params.entries,
+    params.providers,
+    params.monthYear,
+  );
   const regionSet = new Set(params.regions);
   const byRegion = new Map<string, Map<string, MasterAvailabilityClientExportProvider[]>>();
 
@@ -323,27 +309,33 @@ export async function buildRegionExportWorkbooks(params: {
     if (regionSet.size > 0 && !regionSet.has(region)) continue;
     if (params.company === '4tress' && region === 'Chaperone') continue;
 
+    const tabName = facilityExportTabName(p.facilityName, p.city, p.state);
     const facilities = byRegion.get(region) ?? new Map();
-    const list = facilities.get(p.facilityName) ?? [];
+    const list = facilities.get(tabName) ?? [];
     list.push(p);
-    facilities.set(p.facilityName, list);
+    facilities.set(tabName, list);
     byRegion.set(region, facilities);
   }
 
-  const { label } = parseMonthYear(params.monthYear);
   const outputs: { filename: string; buffer: Buffer }[] = [];
 
   for (const [region, facilities] of byRegion) {
     const workbook = new Workbook();
-    for (const [facilityName, facilityProviders] of facilities) {
-      addFacilitySheet(workbook, facilityName, facilityProviders, params.monthYear, offByProviderDate);
+    const usedSheetNames = new Set<string>();
+    for (const [tabName, facilityProviders] of facilities) {
+      const sheetName = sanitizeWorksheetName(tabName, usedSheetNames);
+      addCalendarScheduleSheet(
+        workbook,
+        sheetName,
+        params.monthYear,
+        uniqueCalendarProviders(facilityProviders),
+        hoursByProviderDate,
+      );
     }
     if (workbook.worksheets.length === 0) continue;
 
-    const filename =
-      region === 'Chaperone'
-        ? `Chaperone - Frontera - ${label}.xlsx`
-        : `Region ${region} - ${params.company} - ${label}.xlsx`;
+    workbook.creator = `${params.company} ${region}`;
+    const filename = regionExportFilename(region, params.company, params.monthYear);
     const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
     outputs.push({ filename, buffer });
   }
@@ -351,27 +343,63 @@ export async function buildRegionExportWorkbooks(params: {
   return outputs;
 }
 
+export async function buildClientSchedulesRegionExport(params: {
+  monthYear: string;
+  region: string;
+  rows: ClientScheduleRow[];
+}): Promise<{ filename: string; buffer: Buffer }> {
+  const scoped = params.rows.filter((row) => row.region === params.region);
+  if (scoped.length === 0) {
+    return buildEmptyRegionExportWorkbook({
+      company: 'Frontera',
+      monthYear: params.monthYear,
+      region: params.region,
+    });
+  }
+
+  const hoursByProviderDate = buildClientScheduleHoursMap(scoped, params.monthYear);
+  const byFacility = new Map<string, ClientScheduleRow[]>();
+  for (const row of scoped) {
+    const tabName = facilityExportTabName(row.site.facilityName, row.site.city, row.site.state);
+    const list = byFacility.get(tabName) ?? [];
+    list.push(row);
+    byFacility.set(tabName, list);
+  }
+
+  const workbook = new Workbook();
+  const usedSheetNames = new Set<string>();
+  for (const [tabName, facilityRows] of byFacility) {
+    const sheetName = sanitizeWorksheetName(tabName, usedSheetNames);
+    addCalendarScheduleSheet(
+      workbook,
+      sheetName,
+      params.monthYear,
+      uniqueClientCalendarProviders(facilityRows),
+      hoursByProviderDate,
+    );
+  }
+
+  workbook.creator = `Frontera ${params.region}`;
+  const filename = regionExportFilename(params.region, 'Frontera', params.monthYear);
+  const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+  return { filename, buffer };
+}
+
 export async function buildEmptyRegionExportWorkbook(params: {
   company: string;
   monthYear: string;
   region: string;
 }): Promise<{ filename: string; buffer: Buffer }> {
-  const { label } = parseMonthYear(params.monthYear);
   const workbook = new Workbook();
   workbook.addWorksheet('No providers');
-  const filename =
-    params.region === 'Chaperone'
-      ? `Chaperone - Frontera - ${label}.xlsx`
-      : `Region ${params.region} - ${params.company} - ${label}.xlsx`;
+  const filename = regionExportFilename(params.region, params.company, params.monthYear);
   const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
   return { filename, buffer };
 }
 
-const CANONICAL_RECRUITERS = [
-  'Amy Guy',
-  'Audrey Williams',
-  'Clint Robinson',
+const ACE_IMO_RECRUITERS = [
   'Gray Rodgers',
+  'Audrey Williams',
   'Richard Montgomery',
 ] as const;
 
@@ -391,7 +419,7 @@ export async function buildAceImoExportWorkbook(params: {
     params.monthYear,
   );
 
-  for (const recruiterName of CANONICAL_RECRUITERS) {
+  for (const recruiterName of ACE_IMO_RECRUITERS) {
     if (recruiterFilter.size > 0 && !recruiterFilter.has(recruiterName)) continue;
     const recruiterProviders = params.providers.filter(
       (p) => (p.recruiterName ?? '').trim() === recruiterName,

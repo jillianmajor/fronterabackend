@@ -7,6 +7,7 @@ import {
 } from './dto/active-provider-response.dto';
 import { ListActiveProvidersQueryDto } from './dto/list-active-providers-query.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { providersExportFilename } from '../../repository/persistence/utils/export-filename.util';
 import { ProvidersService } from './providers.service';
 
 @ApiTags('Admin — Providers')
@@ -39,7 +40,7 @@ export class ProvidersController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
     const buffer = await this.providersService.exportActiveProvidersExcel(query);
-    const filename = `active-providers-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const filename = providersExportFilename();
     res.set({
       'Content-Type':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

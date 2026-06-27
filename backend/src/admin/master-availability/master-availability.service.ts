@@ -47,7 +47,12 @@ export class MasterAvailabilityService {
 
   getSubmissionProgress(company: string, monthYear?: string) {
     this.assertCompany(company);
-    return this.repository.getSubmissionProgress(company, monthYear);
+    return this.repository.getSubmissionProgress(company, monthYear, ['prn']);
+  }
+
+  getPtoSubmissionProgress(company: string, monthYear?: string) {
+    this.assertCompany(company);
+    return this.repository.getSubmissionProgress(company, monthYear, ['set']);
   }
 
   listPrnTable(query: MasterAvailabilityQueryDto) {
@@ -73,6 +78,34 @@ export class MasterAvailabilityService {
     });
   }
 
+  exportPtoTableExcel(query: MasterAvailabilityQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext({ ...query, view: 'table' }, 'pto', {
+      tableSheet: 'Master PTO',
+      calendarSheet: 'Master PTO Calendar',
+    });
+  }
+
+  exportPtoCalendarExcel(query: MasterAvailabilityQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext({ ...query, view: 'calendar' }, 'pto', {
+      tableSheet: 'Master PTO',
+      calendarSheet: 'Master PTO Calendar',
+    });
+  }
+
+  exportPrnTableExcel(query: MasterAvailabilityQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext({ ...query, view: 'table' }, 'prn', {
+      tableSheet: 'Master PRN Availability',
+      calendarSheet: 'Master PRN Availability Calendar',
+    });
+  }
+
+  exportPrnCalendarExcel(query: MasterAvailabilityQueryDto): Promise<Buffer> {
+    return this.exportExcelForContext({ ...query, view: 'calendar' }, 'prn', {
+      tableSheet: 'Master PRN Availability',
+      calendarSheet: 'Master PRN Availability Calendar',
+    });
+  }
+
   exportPtoExcel(query: MasterAvailabilityExportQueryDto): Promise<Buffer> {
     return this.exportExcelForContext(query, 'pto', {
       tableSheet: 'Master PTO',
@@ -83,12 +116,31 @@ export class MasterAvailabilityService {
   async exportRegionExcel(
     query: MasterAvailabilityRegionExportQueryDto,
   ): Promise<{ filename: string; buffer: Buffer }[]> {
+    return this.exportRegionExcelForContext(query, 'pto');
+  }
+
+  async exportPrnRegionExcel(
+    query: MasterAvailabilityRegionExportQueryDto,
+  ): Promise<{ filename: string; buffer: Buffer }[]> {
+    return this.exportRegionExcelForContext(query, 'prn');
+  }
+
+  private async exportRegionExcelForContext(
+    query: MasterAvailabilityRegionExportQueryDto,
+    context: 'pto' | 'prn',
+  ): Promise<{ filename: string; buffer: Buffer }[]> {
     const filters = this.toFilters(query);
     const { start, end } = parseMonthYear(filters.monthYear);
-    const [entries, providers] = await Promise.all([
-      this.loadPtoClientExportEntries(filters, start, end),
+    const entriesPromise =
+      context === 'pto'
+        ? this.loadPtoClientExportEntries(filters, start, end)
+        : this.loadEntries(filters, start, end, 'prn');
+    const [entries, allProviders] = await Promise.all([
+      entriesPromise,
       this.repository.listProvidersForClientExport(filters, start, end),
     ]);
+    const scheduleType = context === 'prn' ? 'prn' : 'set';
+    const providers = allProviders.filter((p) => p.scheduleType === scheduleType);
     const regions = filters.regions ?? [];
     const results = await buildRegionExportWorkbooks({
       company: filters.company,
@@ -112,10 +164,13 @@ export class MasterAvailabilityService {
   async exportAceImoExcel(query: MasterAvailabilityAceImoExportQueryDto): Promise<Buffer> {
     const filters = this.toFilters(query);
     const { start, end } = parseMonthYear(filters.monthYear);
-    const [entries, providers] = await Promise.all([
+    const [entries, allProviders] = await Promise.all([
       this.loadPtoClientExportEntries(filters, start, end),
       this.repository.listProvidersForClientExport(filters, start, end),
     ]);
+    const providers = allProviders
+      .filter((p) => p.scheduleType === 'set')
+      .sort((a, b) => a.providerUserId.localeCompare(b.providerUserId));
     const recruiterNames = query.recruiterIds?.length
       ? (
           await this.repository.getFilterOptions(filters.company)

@@ -115,14 +115,35 @@ export function timeAvailableForTimeOff(
   return formatTimeRange(startTime, endTime);
 }
 
+const WEEKDAY_ALIASES: Record<string, string> = {
+  sun: 'Sunday',
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+};
+
+/** Normalizes Mon / monday / Monday to canonical weekday name. */
+export function normalizeWeekday(day: string): string {
+  const key = day.trim().toLowerCase();
+  if (WEEKDAY_ALIASES[key]) return WEEKDAY_ALIASES[key];
+  const full = WEEKDAYS.find((w) => w.toLowerCase() === key);
+  if (full) return full;
+  const prefix = key.slice(0, 3);
+  return WEEKDAYS.find((w) => w.toLowerCase().startsWith(prefix)) ?? day;
+}
+
 export function shiftsForWeekday(schedule: unknown, weekday: string): WeeklyShift[] {
   if (!Array.isArray(schedule)) return [];
+  const target = normalizeWeekday(weekday);
   return schedule.filter(
     (s): s is WeeklyShift =>
       !!s &&
       typeof s === 'object' &&
       typeof (s as WeeklyShift).day === 'string' &&
-      (s as WeeklyShift).day.toLowerCase() === weekday.toLowerCase(),
+      normalizeWeekday((s as WeeklyShift).day) === target,
   );
 }
 

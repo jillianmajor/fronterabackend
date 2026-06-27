@@ -447,6 +447,7 @@ export interface IMasterAvailabilityRepository {
   getSubmissionProgress(
     company: string,
     monthYear?: string,
+    scheduleTypes?: Array<'prn' | 'set'>,
   ): Promise<MasterAvailabilitySubmissionProgress>;
 
   listProvidersForClientExport(
@@ -466,6 +467,8 @@ export interface MasterAvailabilityClientExportProvider {
   liaisonName: string | null;
   region: string | null;
   facilityName: string;
+  city?: string | null;
+  state?: string | null;
   workSiteId: string;
   weeklySchedule: unknown;
   scheduleType: string;

@@ -13,6 +13,7 @@
 import { Pool, type PoolClient } from 'pg';
 import { getPgSslConfig } from '../src/config/database-connection';
 import { loadDotEnv } from './seed/load-dotenv';
+import { seedAceImoDemoData } from './seed/ace-imo-demo';
 import { seedExtraActiveProvidersData } from './seed/extra-active-providers';
 import { seedProviderPrnAvailabilityData } from './seed/provider-prn-availability';
 import { seedProviderSetTimeOffData } from './seed/provider-set-time-off';
@@ -253,6 +254,7 @@ async function main(): Promise<void> {
     );
 
     await seedExtraActiveProvidersData(client, instanceId);
+    const aceImoMonthYear = await seedAceImoDemoData(client, instanceId);
 
     const prnMonthYear = await seedProviderPrnAvailabilityData(client);
     const setMonthYear = await seedProviderSetTimeOffData(client);
@@ -327,7 +329,7 @@ async function main(): Promise<void> {
     console.log('  GET http://localhost:3000/admin/master-pto?company=Frontera');
     console.log('  GET http://localhost:3000/admin/master-pto/export?company=Frontera&view=table');
     console.log('  GET http://localhost:3000/admin/master-pto/export/region?company=Frontera&regions=Region%201');
-    console.log('  GET http://localhost:3000/admin/master-pto/export/ace-imo?company=Frontera');
+    console.log('  GET http://localhost:3000/admin/master-pto/export/ace-imo?company=Frontera&monthYear=' + aceImoMonthYear);
     console.log('');
     console.log('Schedule Change Approvals:');
     console.log('  GET http://localhost:3000/admin/schedule-change-approvals/filter-options?company=Frontera');
